@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
@@ -37,8 +38,8 @@ public class ClientEntity implements Serializable {
     @Column(name="name")
     private String name;
 
-    @NotNull
-    @Size(min = 1, max = 20)
+    @NotBlank
+    @Size(max = 20)
     @Basic(optional=false)
     @Column(name="document")   
     private String document;
@@ -53,7 +54,8 @@ public class ClientEntity implements Serializable {
     @Column(name="´email")
     private String email;
     
-    @Size(min = 1, max = 500)
+    @NotBlank
+    @Size(max = 500)
     @Column(name="´adress")
     private String adress;
     
@@ -105,9 +107,10 @@ public class ClientEntity implements Serializable {
         this.adress = adress;
     }
 
+    // EQUALS E HASHCODE
     @Override
     public int hashCode() {
-        int hash = 0;
+        int hash = 3;
         hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
@@ -125,6 +128,7 @@ public class ClientEntity implements Serializable {
         return true;
     }
 
+    // TO STRING 
     @Override
     public String toString() {
         return "com.upf.trabalhofinal.entity.ClientEntity[ id=" + id + " ]";
