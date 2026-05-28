@@ -21,44 +21,44 @@ import java.io.Serializable;
  * @author Pedro
  */
 @Entity
-@Table(name="clients") 
+@Table(name = "clients")
 public class ClientEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional=false)
-    @Column(name="id")
+    @Basic(optional = false)
+    @Column(name = "id")
     private Integer id;
-    
+
     @NotNull
     @Size(min = 1, max = 100)
-    @Basic(optional=false)
-    @Column(name="name")
+    @Basic(optional = false)
+    @Column(name = "name")
     private String name;
 
     @NotBlank
     @Size(max = 20)
-    @Basic(optional=false)
-    @Column(name="document")   
+    @Basic(optional = false)
+    @Column(name = "document")
     private String document;
-    
+
     @NotNull
     @Size(min = 1, max = 20)
-    @Basic(optional=false)
-    @Column(name="´phone")
-    private String phone; 
-    
+    @Basic(optional = false)
+    @Column(name = "´phone")
+    private String phone;
+
     @Size(min = 1, max = 500)
-    @Column(name="´email")
+    @Column(name = "´email")
     private String email;
-    
+
     @NotBlank
     @Size(max = 500)
-    @Column(name="´adress")
+    @Column(name = "´adress")
     private String adress;
-    
+
     // GETTER E SETTERS
     public Integer getId() {
         return id;
@@ -67,7 +67,7 @@ public class ClientEntity implements Serializable {
     public void setId(Integer id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -83,6 +83,7 @@ public class ClientEntity implements Serializable {
     public void setDocument(String document) {
         this.document = document;
     }
+
     public String getPhone() {
         return phone;
     }
@@ -133,5 +134,5 @@ public class ClientEntity implements Serializable {
     public String toString() {
         return "com.upf.trabalhofinal.entity.ClientEntity[ id=" + id + " ]";
     }
-    
+
 }

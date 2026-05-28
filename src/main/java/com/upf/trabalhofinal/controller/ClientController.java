@@ -8,6 +8,7 @@ import com.upf.trabalhofinal.entity.ClientEntity;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -14,7 +14,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -22,72 +21,62 @@ import java.util.Objects;
  * @author Pedro
  */
 @Entity
-@Table(name="services")
-public class ServiceEntity implements Serializable {
+@Table(name = "users")
+public class UserEntity implements Serializable {
+
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional=false)
-    @Column(name="id")
+    @Basic(optional = false)
+    @Column(name = "id")
     private Integer id;
-    
+
     @NotNull
-    @Size(min=1, max=500)
-    @Basic(optional=false)
-    @Column(name="name")
+    @Size(min = 1, max = 100)
+    @Basic(optional = false)
+    @Column(name = "name")
     private String name;
-    
-    @Size(max = 1000)
-    @Column(name="description")
-    private String description;
-    
+
     @NotNull
-    @Basic(optional=false)
-    @Column(name="price", precision = 10, scale = 2)
-    private BigDecimal price;
-    
-    @Basic(optional=false)
-    @Column(name="active")
-    private boolean active;  
+    @Size(min = 1, max = 100)
+    @Basic(optional = false)
+    @Column(name = "email")
+    private String email;
 
-    // GETTER E SETTERS
+    @NotNull
+    @Size(min = 6, max = 255)
+    @Basic(optional = false)
+    @Column(name = "password")
+    private String password;
 
-    @Override
-    public String toString() {
-        return "ServicesEntity{" + "id=" + id + '}';
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    @Basic(optional = false)
+    @Column(name = "active")
+    private boolean active;
 
     public String getName() {
         return name;
     }
 
+    // GETTERS E SETTERS
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public String getEmail() {
+        return email;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public boolean isActive() {
@@ -97,10 +86,13 @@ public class ServiceEntity implements Serializable {
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+
+    public Integer getId() {
+        return id;
+    }
+
     // EQUALS E HASHCODE
-    
-       @Override
+    @Override
     public int hashCode() {
         int hash = 3;
         hash = 83 * hash + Objects.hashCode(this.id);
@@ -112,11 +104,13 @@ public class ServiceEntity implements Serializable {
         if (this == obj) {
             return true;
         }
+
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        
-        ServiceEntity other = (ServiceEntity) obj;
-        return Objects.equals(this.id, other.id);
+
+        UserEntity other = (UserEntity) obj;
+
+        return id != null && id.equals(other.id);
     }
 }
