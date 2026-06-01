@@ -30,8 +30,8 @@ public class ClientEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
-    private Integer id;
-
+    private Long id;
+    
     @NotNull
     @Size(min = 1, max = 100)
     @Basic(optional = false)
@@ -60,11 +60,11 @@ public class ClientEntity implements Serializable {
     private String adress;
 
     // GETTER E SETTERS
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -30,7 +30,7 @@ public class UserEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
-    private Integer id;
+    private Long id;
 
     @NotNull
     @Size(min = 1, max = 100)
@@ -87,7 +87,7 @@ public class UserEntity implements Serializable {
         this.active = active;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 

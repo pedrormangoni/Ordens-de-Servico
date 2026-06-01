@@ -34,7 +34,7 @@ public class ServiceOrderEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
-    private Integer id;
+    private Long id;
 
     @NotNull
     @Basic(optional = false)
@@ -123,7 +123,7 @@ public class ServiceOrderEntity implements Serializable {
         this.completedAt = completedAt;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
