@@ -22,7 +22,7 @@ import java.math.BigDecimal;
  * @author Pedro
  */
 @Entity
-@Table(name = "service_order_items ")
+@Table(name = "service_order_items")
 public class ServiceOrderItemEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -53,11 +53,11 @@ public class ServiceOrderItemEntity implements Serializable {
     
     // MAPEAMENTOS
     @ManyToOne(optional = false)
-    @JoinColumn(name = "service_orders", referencedColumnName = "id")
-    private ServiceOrderEntity service_orders;
+    @JoinColumn(name = "service_order_id", referencedColumnName = "id")
+    private ServiceOrderEntity serviceOrder;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "services", referencedColumnName = "id")
+    @JoinColumn(name = "service_id", referencedColumnName = "id")
     private ServiceEntity service;
 
     // GETTER E SETTERS
@@ -93,12 +93,20 @@ public class ServiceOrderItemEntity implements Serializable {
         this.total_price = total_price;
     }
 
-    public ServiceOrderEntity getService_orders() {
-        return service_orders;
+    public Long getId() {
+        return id;
     }
 
-    public void setService_orders(ServiceOrderEntity service_orders) {
-        this.service_orders = service_orders;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public ServiceOrderEntity getServiceOrder() {
+        return serviceOrder;
+    }
+
+    public void setServiceOrder(ServiceOrderEntity serviceOrder) {
+        this.serviceOrder = serviceOrder;
     }
 
     public ServiceEntity getService() {

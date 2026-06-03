@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -33,13 +34,13 @@ public class UserEntity implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 1, max = 100)
+    @Size(min = 1, max = 150)
     @Basic(optional = false)
     @Column(name = "name")
     private String name;
 
     @NotNull
-    @Size(min = 1, max = 100)
+    @Size(min = 1, max = 150)
     @Basic(optional = false)
     @Column(name = "email")
     private String email;
@@ -53,6 +54,11 @@ public class UserEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "active")
     private boolean active;
+
+    @NotNull
+    @Basic(optional = false)
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public String getName() {
         return name;
@@ -89,6 +95,14 @@ public class UserEntity implements Serializable {
 
     public Long getId() {
         return id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     // EQUALS E HASHCODE

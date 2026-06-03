@@ -4,9 +4,12 @@
  */
 package com.upf.trabalhofinal.entity;
 
+import com.upf.trabalhofinal.enums.ServiceOrderStatus;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,17 +41,16 @@ public class ServiceOrderEntity implements Serializable {
 
     @NotNull
     @Basic(optional = false)
-    @Size(min = 6)
+    @Size(max = 30)
     @Column(name = "number")
     private String number;
 
     @NotNull
     @Basic(optional = false)
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private ServiceOrderStatus status;
 
-    @NotNull
-    @Basic(optional = false)
     @Size(max = 1000)
     @Column(name = "description")
     private String description;
@@ -59,6 +61,7 @@ public class ServiceOrderEntity implements Serializable {
     private BigDecimal totalAmount;
 
     @NotNull
+    @Basic(optional = false)
     @Column(name = "opened_at")
     private LocalDateTime openedAt;
 
@@ -83,11 +86,11 @@ public class ServiceOrderEntity implements Serializable {
         this.number = number;
     }
 
-    public String getStatus() {
+    public ServiceOrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ServiceOrderStatus status) {
         this.status = status;
     }
 

@@ -4,25 +4,32 @@
  */
 package com.upf.trabalhofinal.entity;
 
+import com.upf.trabalhofinal.enums.CashFlowType;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  *
  * @author Pedro
  */
-
 @Entity
-@Table(name="cash_flow")
-public class CashFlowEntity {
+@Table(name = "cash_flow")
+public class CashFlowEntity implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -30,30 +37,38 @@ public class CashFlowEntity {
     @Basic(optional = false)
     @Column(name = "id")
     private Long id;
-    
+
     @NotNull
     @Basic(optional = false)
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private String type;
-    
+    private CashFlowType type;
+
     @NotNull
     @Basic(optional = false)
-    @Size(max = 1000)
+    @Size(max = 255)
     @Column(name = "description")
     private String description;
-    
+
     @NotNull
     @Basic(optional = false)
     @Column(name = "amount", precision = 10, scale = 2)
     private BigDecimal amount;
-    
+
+    @Size(max = 50)
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
+    @ManyToOne
+    @JoinColumn(name = "service_order_id", referencedColumnName = "id")
+    private ServiceOrderEntity serviceOrder;
+
     @NotNull
     @Basic(optional = false)
-    @Column(name = "payment_method")
-    private String payment_method;
-    
-    // GETTERS E SETTERS
+    @Column(name = "transaction_date")
+    private LocalDateTime transactionDate;
 
+    // GETTERS E SETTERS
     public Long getId() {
         return id;
     }
@@ -62,11 +77,27 @@ public class CashFlowEntity {
         this.id = id;
     }
 
-    public String getType() {
+    public ServiceOrderEntity getServiceOrder() {
+        return serviceOrder;
+    }
+
+    public void setServiceOrder(ServiceOrderEntity serviceOrder) {
+        this.serviceOrder = serviceOrder;
+    }
+
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(LocalDateTime transactionDate) {
+        this.transactionDate = transactionDate;
+    }
+
+    public CashFlowType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(CashFlowType type) {
         this.type = type;
     }
 
@@ -86,13 +117,31 @@ public class CashFlowEntity {
         this.amount = amount;
     }
 
-    public String getPayment_method() {
-        return payment_method;
+    public String getPaymentMethod() {
+        return paymentMethod;
     }
 
-    public void setPayment_method(String payment_method) {
-        this.payment_method = payment_method;
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
-    
-    
+
+    // EQUALS E HASHCODE
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof CashFlowEntity)) {
+            return false;
+        }
+        CashFlowEntity other = (CashFlowEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
 }

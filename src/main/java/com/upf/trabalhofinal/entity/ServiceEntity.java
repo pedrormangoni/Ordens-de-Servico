@@ -15,6 +15,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -33,7 +34,7 @@ public class ServiceEntity implements Serializable {
     private Long id;
     
     @NotNull
-    @Size(min=1, max=500)
+    @Size(min=1, max=150)
     @Basic(optional=false)
     @Column(name="name")
     private String name;
@@ -49,7 +50,12 @@ public class ServiceEntity implements Serializable {
     
     @Basic(optional=false)
     @Column(name="active")
-    private boolean active;  
+    private boolean active;
+
+    @NotNull
+    @Basic(optional=false)
+    @Column(name="created_at")
+    private LocalDateTime createdAt;
 
     // GETTER E SETTERS
 
@@ -97,7 +103,15 @@ public class ServiceEntity implements Serializable {
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     // EQUALS E HASHCODE
     
        @Override

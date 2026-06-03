@@ -15,6 +15,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -33,31 +34,31 @@ public class ClientEntity implements Serializable {
     private Long id;
     
     @NotNull
-    @Size(min = 1, max = 100)
+    @Size(min = 1, max = 150)
     @Basic(optional = false)
     @Column(name = "name")
     private String name;
 
-    @NotBlank
     @Size(max = 20)
-    @Basic(optional = false)
     @Column(name = "document")
     private String document;
 
-    @NotNull
-    @Size(min = 1, max = 20)
-    @Basic(optional = false)
-    @Column(name = "´phone")
+    @Size(max = 20)
+    @Column(name = "phone")
     private String phone;
 
-    @Size(min = 1, max = 500)
-    @Column(name = "´email")
+    @Size(max = 150)
+    @Column(name = "email")
     private String email;
 
-    @NotBlank
     @Size(max = 500)
-    @Column(name = "´adress")
-    private String adress;
+    @Column(name = "address")
+    private String address;
+
+    @NotNull
+    @Basic(optional = false)
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     // GETTER E SETTERS
     public Long getId() {
@@ -100,12 +101,20 @@ public class ClientEntity implements Serializable {
         this.email = email;
     }
 
-    public String getAdress() {
-        return adress;
+    public String getAddress() {
+        return address;
     }
 
-    public void setAdress(String adress) {
-        this.adress = adress;
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     // EQUALS E HASHCODE
