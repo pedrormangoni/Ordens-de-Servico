@@ -1,11 +1,189 @@
-<?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html">
-    <h:head>
-        <title>Clientes</title>
-    </h:head>
-    <h:body>
-        Acesse e gerencie seus clientes aqui!
-    </h:body>
-</html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">
+        <h:outputText value="Clientes"></h:outputText>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="frmList">
+            <h:panelGroup id="pngList">
+                <p:growl id="growl" showDetail="true" />
+
+                <p:fieldset toggleable="true">
+                    <p:dataTable id="datalist" value="#{clientController.list}" var="item"
+                                 selectionMode="single" selection="#{clientController.selected}"
+                                 widgetVar="datalistClientWidgetVar"
+                                 rowKey="#{item.id}"
+                                 paginator="true"
+                                 rows="10"
+                                 rowsPerPageTemplate="5,10,50,100"
+                                 emptyMessage="Nenhum cliente cadastrado...">
+
+                        <p:ajax event="rowSelect" update="btnEdit btnDelete btnView"/>
+                        <p:ajax event="rowUnselect" update="btnEdit btnDelete btnView"/>
+
+                        <p:column width="5%" sortBy="#{item.id}" filterBy="#{item.id}">
+                            <f:facet name="header"><h:outputText value="ID"/></f:facet>
+                            <h:outputText value="#{item.id}"/>
+                        </p:column>
+
+                        <p:column width="20%" sortBy="#{item.name}" filterBy="#{item.name}">
+                            <f:facet name="header"><h:outputText value="Nome"/></f:facet>
+                            <h:outputText value="#{item.name}"/>
+                        </p:column>
+
+                        <p:column width="12%" sortBy="#{item.document}" filterBy="#{item.document}">
+                            <f:facet name="header"><h:outputText value="Documento"/></f:facet>
+                            <h:outputText value="#{item.document}"/>
+                        </p:column>
+
+                        <p:column width="12%" sortBy="#{item.phone}" filterBy="#{item.phone}">
+                            <f:facet name="header"><h:outputText value="Telefone"/></f:facet>
+                            <h:outputText value="#{item.phone}"/>
+                        </p:column>
+
+                        <p:column width="18%" sortBy="#{item.email}" filterBy="#{item.email}">
+                            <f:facet name="header"><h:outputText value="Email"/></f:facet>
+                            <h:outputText value="#{item.email}"/>
+                        </p:column>
+
+                        <p:column width="18%" sortBy="#{item.address}" filterBy="#{item.address}">
+                            <f:facet name="header"><h:outputText value="Endereço"/></f:facet>
+                            <h:outputText value="#{item.address}"/>
+                        </p:column>
+
+                        <p:column width="10%" sortBy="#{item.createdAt}" filterBy="#{item.createdAt}">
+                            <f:facet name="header"><h:outputText value="Criado"/></f:facet>
+                            <h:outputText value="#{item.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                            </h:outputText>
+                        </p:column>
+
+                        <f:facet name="footer">
+                            <p:commandButton id="btnCreate" value="Novo Cliente" icon="pi pi-file"
+                                             actionListener="#{clientController.prepareCreate()}"
+                                             update=":CreateForm"
+                                             onclick="PF('dlgCreate').show()"/>
+
+                            <p:commandButton id="btnEdit" icon="pi pi-pencil" value="Editar"
+                                             update="formEdit" oncomplete="PF('dlgEdit').show()"
+                                             disabled="#{empty clientController.selected}"/>
+
+                            <p:commandButton id="btnDelete" icon="pi pi-trash" value="Excluir"
+                                             actionListener="#{clientController.delete()}" update="frmList"
+                                             disabled="#{empty clientController.selected}">
+                                <p:confirm header="Confirmar Exclusão" message="Confirma exclusão do registro?"/>
+                            </p:commandButton>
+
+                            <p:commandButton id="btnView" icon="pi pi-search" value="Detalhes"
+                                             update="formView" oncomplete="PF('dlgView').show()"
+                                             disabled="#{empty clientController.selected}"/>
+                        </f:facet>
+
+                    </p:dataTable>
+                </p:fieldset>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="fa fa-check" />
+                    <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no" icon="fa fa-times" />
+                </p:confirmDialog>
+
+            </h:panelGroup>
+        </h:form>
+
+        <!-- Diálogo Criar -->
+        <p:dialog header="Novo Cliente" widgetVar="dlgCreate" height="450" width="700" showEffect="fade" modal="true">
+            <h:form id="CreateForm">
+                <p:growl id="growlCreate" showDetail="true" />
+                <h:panelGrid id="pngCadastro" columns="2">
+                    <p:outputLabel value="Nome:" for="iptName" />
+                    <p:inputText id="iptName" value="#{clientController.client.name}" size="40" required="true" requiredMessage="Nome obrigatório" maxlength="150" />
+
+                    <p:outputLabel value="Documento:" for="iptDocument" />
+                    <p:inputText id="iptDocument" value="#{clientController.client.document}" size="20" maxlength="20" />
+
+                    <p:outputLabel value="Telefone:" for="iptPhone" />
+                    <p:inputMask id="iptPhone" value="#{clientController.client.phone}" mask="(99)99999-9999" />
+
+                    <p:outputLabel value="Email:" for="iptEmail" />
+                    <p:inputText id="iptEmail" value="#{clientController.client.email}" maxlength="150" />
+
+                    <p:outputLabel value="Endereço:" for="iptAddress" />
+                    <p:inputTextarea id="iptAddress" value="#{clientController.client.address}" rows="3" cols="40" maxlength="500" />
+
+                    <p:outputLabel value="" />
+                    <p:outputLabel value="" />
+                </h:panelGrid>
+
+                <p:commandButton actionListener="#{clientController.create()}" icon="pi pi-save" value="Salvar"
+                                 update=":frmList, CreateForm" onclick="PF('dlgCreate').hide()" />
+            </h:form>
+        </p:dialog>
+
+        <!-- Diálogo Editar -->
+        <p:dialog header="Editar Cliente" widgetVar="dlgEdit" height="500" width="700" showEffect="fade" modal="true">
+            <h:form id="formEdit">
+                <p:growl id="growlEdit" showDetail="true" />
+                <h:panelGrid id="pngEdicao" columns="2" rendered="#{clientController.selected != null}">
+                    <p:outputLabel value="ID:" for="iptId" />
+                    <p:inputText id="iptId" value="#{clientController.selected.id}" disabled="true" />
+
+                    <p:outputLabel value="Nome:" for="iptNameEdit" />
+                    <p:inputText id="iptNameEdit" value="#{clientController.selected.name}" required="true" requiredMessage="Nome obrigatório" maxlength="150" />
+
+                    <p:outputLabel value="Documento:" for="iptDocumentEdit" />
+                    <p:inputText id="iptDocumentEdit" value="#{clientController.selected.document}" maxlength="20" />
+
+                    <p:outputLabel value="Telefone:" for="iptPhoneEdit" />
+                    <p:inputMask id="iptPhoneEdit" value="#{clientController.selected.phone}" mask="(99)99999-9999" />
+
+                    <p:outputLabel value="Email:" for="iptEmailEdit" />
+                    <p:inputText id="iptEmailEdit" value="#{clientController.selected.email}" maxlength="150" />
+
+                    <p:outputLabel value="Endereço:" for="iptAddressEdit" />
+                    <p:inputTextarea id="iptAddressEdit" value="#{clientController.selected.address}" rows="3" cols="40" maxlength="500" />
+                </h:panelGrid>
+
+                <p:commandButton id="btnSalvarEdicao" value="Salvar" update="@form, :frmList" onclick="dlgEdit.hide()" icon="pi pi-save"
+                                 action="#{clientController.edit()}" />
+            </h:form>
+        </p:dialog>
+
+        <!-- Diálogo Visualizar -->
+        <p:dialog header="Detalhes do Cliente" widgetVar="dlgView" height="300" width="600" showEffect="fade" modal="true">
+            <h:form id="formView">
+                <h:panelGrid id="pngView" columns="2" rendered="#{clientController.selected != null}">
+                    <p:outputLabel value="ID:" />
+                    <p:outputLabel value="#{clientController.selected.id}" />
+
+                    <p:outputLabel value="Nome:" />
+                    <p:outputLabel value="#{clientController.selected.name}" />
+
+                    <p:outputLabel value="Documento:" />
+                    <p:outputLabel value="#{clientController.selected.document}" />
+
+                    <p:outputLabel value="Telefone:" />
+                    <p:outputLabel value="#{clientController.selected.phone}" />
+
+                    <p:outputLabel value="Email:" />
+                    <p:outputLabel value="#{clientController.selected.email}" />
+
+                    <p:outputLabel value="Endereço:" />
+                    <p:outputLabel value="#{clientController.selected.address}" />
+
+                    <p:outputLabel value="Criado:" />
+                    <p:outputLabel value="#{clientController.selected.createdAt}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                    </p:outputLabel>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>

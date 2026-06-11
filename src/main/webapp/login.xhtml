@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="jakarta.faces.core">
+
+    <h:head>
+        <title>Login | Sistema de Gestão</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="description" content="Acesso ao sistema de gestão"/>
+        <h:outputStylesheet name="css/colors.css"/>
+    </h:head>
+
+    <h:body>
+        <main class="login-container" role="main">
+            <section class="card" aria-labelledby="card-title">
+                <header class="card-header">
+                    <h2 id="card-title">Acesso ao sistema</h2>
+                </header>
+
+                <div class="card-body">
+                    <h:form id="loginForm" prependId="false">
+                        <p:growl id="messages"
+                                 showDetail="true"
+                                 skipDetailIfEqualsSummary="true"
+                                 life="5"/>
+
+                        <div class="form-row">
+                            <p:outputLabel for="email"
+                                           value="E-mail"
+                                           styleClass="label"/>
+                            <p:inputText id="email"
+                                         value="#{userController.loginEmail}"
+                                         type="email"
+                                         autocomplete="username"
+                                         placeholder="Informe seu e-mail"
+                                         required="true"
+                                         requiredMessage="Informe o e-mail."
+                                         validatorMessage="E-mail inválido."
+                                         styleClass="input"
+                                         aria-required="true">
+                                <f:validateRegex pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                                 message="E-mail inválido."/>
+                            </p:inputText>
+                            <small class="input-help">Use o e-mail registrado no sistema.</small>
+                        </div>
+
+                        <div class="form-row">
+                            <p:outputLabel for="password"
+                                           value="Senha"
+                                           styleClass="label"/>
+                            <p:password id="password"
+                                        value="#{userController.loginPassword}"
+                                        autocomplete="current-password"
+                                        placeholder="Informe sua senha"
+                                        required="true"
+                                        requiredMessage="Informe a senha."
+                                        toggleMask="true"
+                                        styleClass="input"
+                                        aria-required="true"
+                                        minLength="8"/>
+                            <small class="input-help">Mínimo de 8 caracteres.</small>
+                        </div>
+
+                        <div class="actions">
+                            <h:outputText value="Use suas credenciais para continuar."
+                                          styleClass="link-muted"/>
+                            <p:commandButton id="loginButton"
+                                             value="Entrar"
+                                             icon="pi pi-sign-in"
+                                             action="#{userController.login}"
+                                             process="@form"
+                                             update="messages email password loginButton"
+                                             styleClass="btn-primary"
+                                             loadingMessage="Autenticando..."/>
+                        </div>
+
+                        <div class="form-footer">
+                            <h:outputLink value="#{request.contextPath}/forgot-password"
+                                          styleClass="link-muted">
+                                Esqueceu a senha?
+                            </h:outputLink>
+                            <h:outputLink value="#{request.contextPath}/register"
+                                          styleClass="link-primary">
+                                Criar conta
+                            </h:outputLink>
+                        </div>
+                    </h:form>
+                </div>
+            </section>
+
+            <footer class="login-footer">
+                <h:outputText value="© 2026 Sistema de Gestão. Todos os direitos reservados."
+                              styleClass="footer-text"/>
+            </footer>
+        </main>
+    </h:body>
+</html>

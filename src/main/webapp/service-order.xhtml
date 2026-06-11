@@ -1,11 +1,184 @@
-<?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html">
-    <h:head>
-        <title>Ordens de Serviço</title>
-    </h:head>
-    <h:body>
-        Acesse e gerencie suas ordens de serviços aqui!
-    </h:body>
-</html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">
+        <h:outputText value="Ordens de Serviço"></h:outputText>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="frmList">
+            <h:panelGroup id="pngList">
+                <p:growl id="growl" showDetail="true" />
+
+                <p:fieldset toggleable="true">
+                    <p:dataTable id="datalist" value="#{serviceOrderController.list}" var="item"
+                                 selectionMode="single" selection="#{serviceOrderController.selected}"
+                                 widgetVar="datalistServiceOrderWidgetVar"
+                                 rowKey="#{item.id}"
+                                 paginator="true"
+                                 rows="10"
+                                 rowsPerPageTemplate="5,10,50,100"
+                                 emptyMessage="Nenhuma ordem de serviço cadastrada...">
+
+                        <p:ajax event="rowSelect" update="btnEdit btnDelete btnView btnComplete btnCancel"/>
+                        <p:ajax event="rowUnselect" update="btnEdit btnDelete btnView btnComplete btnCancel"/>
+
+                        <p:column width="6%" sortBy="#{item.number}" filterBy="#{item.number}">
+                            <f:facet name="header"><h:outputText value="Número"/></f:facet>
+                            <h:outputText value="#{item.number}"/>
+                        </p:column>
+
+                        <p:column width="20%" sortBy="#{item.client.name}" filterBy="#{item.client.name}">
+                            <f:facet name="header"><h:outputText value="Cliente"/></f:facet>
+                            <h:outputText value="#{item.client.name}"/>
+                        </p:column>
+
+                        <p:column width="12%" sortBy="#{item.openedAt}" filterBy="#{item.openedAt}">
+                            <f:facet name="header"><h:outputText value="Aberta em"/></f:facet>
+                            <h:outputText value="#{item.openedAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column width="12%" sortBy="#{item.totalAmount}" filterBy="#{item.totalAmount}">
+                            <f:facet name="header"><h:outputText value="Total"/></f:facet>
+                            <h:outputText value="#{item.totalAmount}"/>
+                        </p:column>
+
+                        <p:column width="12%" sortBy="#{item.status}" filterBy="#{item.status}">
+                            <f:facet name="header"><h:outputText value="Status"/></f:facet>
+                            <h:outputText value="#{item.status}"/>
+                        </p:column>
+
+                        <p:column width="24%" sortBy="#{item.description}" filterBy="#{item.description}">
+                            <f:facet name="header"><h:outputText value="Descrição"/></f:facet>
+                            <h:outputText value="#{item.description}"/>
+                        </p:column>
+
+                        <f:facet name="footer">
+                            <p:commandButton id="btnCreate" value="Nova Ordem" icon="pi pi-file"
+                                             actionListener="#{serviceOrderController.prepareCreate()}"
+                                             update=":CreateForm"
+                                             onclick="PF('dlgCreate').show()"/>
+
+                            <p:commandButton id="btnEdit" icon="pi pi-pencil" value="Editar"
+                                             update="formEdit" oncomplete="PF('dlgEdit').show()"
+                                             disabled="#{empty serviceOrderController.selected}"/>
+
+                            <p:commandButton id="btnDelete" icon="pi pi-trash" value="Excluir"
+                                             actionListener="#{serviceOrderController.delete()}" update="frmList"
+                                             disabled="#{empty serviceOrderController.selected}">
+                                <p:confirm header="Confirmar Exclusão" message="Confirma exclusão do registro?"/>
+                            </p:commandButton>
+
+                            <p:commandButton id="btnView" icon="pi pi-search" value="Detalhes"
+                                             update="formView" oncomplete="PF('dlgView').show()"
+                                             disabled="#{empty serviceOrderController.selected}"/>
+
+                            <p:commandButton id="btnComplete" icon="pi pi-check" value="Concluir"
+                                             actionListener="#{serviceOrderController.complete()}" update="frmList"
+                                             disabled="#{empty serviceOrderController.selected or serviceOrderController.selected.status ne 'OPEN'}"/>
+
+                            <p:commandButton id="btnCancel" icon="pi pi-times" value="Cancelar"
+                                             actionListener="#{serviceOrderController.cancel()}" update="frmList"
+                                             disabled="#{empty serviceOrderController.selected or serviceOrderController.selected.status ne 'OPEN'}"/>
+                        </f:facet>
+
+                    </p:dataTable>
+                </p:fieldset>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="fa fa-check" />
+                    <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no" icon="fa fa-times" />
+                </p:confirmDialog>
+
+            </h:panelGroup>
+        </h:form>
+
+        <!-- Diálogo Criar -->
+        <p:dialog header="Nova Ordem de Serviço" widgetVar="dlgCreate" height="500" width="800" showEffect="fade" modal="true">
+            <h:form id="CreateForm">
+                <p:growl id="growlCreate" showDetail="true" />
+                <h:panelGrid id="pngCadastro" columns="2">
+                    <p:outputLabel value="Cliente:" for="idClient" />
+                    <p:selectOneMenu id="idClient" value="#{serviceOrderController.client}" filter="true" filterMatchMode="contains">
+                        <f:selectItem itemLabel="Selecione um cliente..."/>
+                        <f:selectItems value="#{clientController.list}" var="c" itemValue="#{c}" itemLabel="#{c.name}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Descrição:" for="iptDescription" />
+                    <p:inputTextarea id="iptDescription" value="#{serviceOrderController.serviceOrder.description}" rows="4" cols="40" maxlength="1000" />
+
+                    <p:outputLabel value="Itens (adicionar após salvar):" />
+                    <p:outputLabel value="Total: #{serviceOrderController.getItemsTotal()}" />
+
+                    <p:outputLabel value="" />
+                    <p:outputLabel value="" />
+                </h:panelGrid>
+
+                <p:commandButton actionListener="#{serviceOrderController.create()}" icon="pi pi-save" value="Salvar"
+                                 update=":frmList, CreateForm" onclick="PF('dlgCreate').hide()" />
+            </h:form>
+        </p:dialog>
+
+        <!-- Diálogo Editar -->
+        <p:dialog header="Editar Ordem" widgetVar="dlgEdit" height="500" width="800" showEffect="fade" modal="true">
+            <h:form id="formEdit">
+                <p:growl id="growlEdit" showDetail="true" />
+                <h:panelGrid id="pngEdicao" columns="2" rendered="#{serviceOrderController.selected != null}">
+                    <p:outputLabel value="Número:" for="iptNumber" />
+                    <p:inputText id="iptNumber" value="#{serviceOrderController.selected.number}" disabled="true" />
+
+                    <p:outputLabel value="Descrição:" for="iptDescriptionEdit" />
+                    <p:inputTextarea id="iptDescriptionEdit" value="#{serviceOrderController.selected.description}" rows="4" cols="40" maxlength="1000" />
+
+                    <p:outputLabel value="Total:" for="iptTotal" />
+                    <p:inputText id="iptTotal" value="#{serviceOrderController.selected.totalAmount}" />
+
+                    <p:outputLabel value="Status:" for="iptStatus" />
+                    <p:selectOneMenu id="iptStatus" value="#{serviceOrderController.selected.status}">
+                        <f:selectItem itemLabel="OPEN" itemValue="OPEN" />
+                        <f:selectItem itemLabel="COMPLETED" itemValue="COMPLETED" />
+                        <f:selectItem itemLabel="CANCELLED" itemValue="CANCELLED" />
+                    </p:selectOneMenu>
+                </h:panelGrid>
+
+                <p:commandButton id="btnSalvarEdicao" value="Salvar" update="@form, :frmList" onclick="dlgEdit.hide()" icon="pi pi-save"
+                                 action="#{serviceOrderController.edit()}" />
+            </h:form>
+        </p:dialog>
+
+        <!-- Diálogo Visualizar -->
+        <p:dialog header="Detalhes da Ordem" widgetVar="dlgView" height="350" width="700" showEffect="fade" modal="true">
+            <h:form id="formView">
+                <h:panelGrid id="pngView" columns="2" rendered="#{serviceOrderController.selected != null}">
+                    <p:outputLabel value="Número:" />
+                    <p:outputLabel value="#{serviceOrderController.selected.number}" />
+
+                    <p:outputLabel value="Cliente:" />
+                    <p:outputLabel value="#{serviceOrderController.selected.client.name}" />
+
+                    <p:outputLabel value="Descrição:" />
+                    <p:outputLabel value="#{serviceOrderController.selected.description}" />
+
+                    <p:outputLabel value="Total:" />
+                    <p:outputLabel value="#{serviceOrderController.selected.totalAmount}" />
+
+                    <p:outputLabel value="Status:" />
+                    <p:outputLabel value="#{serviceOrderController.selected.status}" />
+
+                    <p:outputLabel value="Aberta em:" />
+                    <p:outputLabel value="#{serviceOrderController.selected.openedAt}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                    </p:outputLabel>
+                </h:panelGrid>
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>
