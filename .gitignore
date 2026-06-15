@@ -1,1 +1,4 @@
-/target/
+target/
+nbproject/private/
+build/
+*.war
