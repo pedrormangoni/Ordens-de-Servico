@@ -1,0 +1,1 @@
+PrimeFaces.widget.Watermark=PrimeFaces.widget.BaseWidget.extend({init:function(a){this._super(a);this.target=PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector(this.cfg.target);this.target.is(":not(:input)")&&(this.target=this.target.find(":input"));this.target.attr("placeholder",this.cfg.value)}});

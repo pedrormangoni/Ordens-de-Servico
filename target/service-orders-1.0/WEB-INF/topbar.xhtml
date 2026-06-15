@@ -1,0 +1,36 @@
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+
+    <div class="layout-topbar">
+        <a href="#" id="layout-menu-btn" class="menu-btn">
+            <i class="pi pi-bars"/>
+        </a>
+
+        <span class="executa-topbar-title">Ordens de Serviço</span>
+
+        <div class="layout-topbar-menu-wrapper">
+            <ul class="topbar-menu executa-topbar-actions">
+                <li>
+                    <span class="executa-topbar-user">
+                        <h:outputText value="#{userController.loggedUser != null ? userController.loggedUser.name : 'Usuário'}"/>
+                    </span>
+                </li>
+                <li>
+                    <h:form id="logoutForm" style="display:inline">
+                        <p:commandLink action="#{userController.logout}"
+                                       ajax="false"
+                                       styleClass="executa-topbar-logout">
+                            <i class="pi pi-sign-out"/>
+                            <span class="topbar-item-name">Sair</span>
+                        </p:commandLink>
+                    </h:form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</ui:composition>

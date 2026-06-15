@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/WEB-INF/template.xhtml">
+
+        <ui:define name="title">Dashboard</ui:define>
+
+        <ui:define name="content">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="executa-page-header mb-4">
+                        <h3 class="m-0 mb-2">Dashboard</h3>
+                        <p class="executa-page-caption m-0">Visão geral das ordens de serviço e clientes.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="card h-full">
+                        <p class="executa-page-caption m-0 mb-2">
+                            <i class="pi pi-list mr-2"/>Ordens abertas
+                        </p>
+                        <h3 class="m-0 mb-2 executa-stat-value">#{dashboardController.openOrdersCount}</h3>
+                        <small class="executa-text-muted">Em aberto ou em andamento</small>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="card h-full">
+                        <p class="executa-page-caption m-0 mb-2">
+                            <i class="pi pi-users mr-2"/>Clientes
+                        </p>
+                        <h3 class="m-0 mb-2 executa-stat-value">#{dashboardController.activeClientsCount}</h3>
+                        <small class="executa-text-muted">Cadastrados no sistema</small>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="card h-full">
+                        <p class="executa-page-caption m-0 mb-2">
+                            <i class="pi pi-wallet mr-2"/>Receita
+                        </p>
+                        <h3 class="m-0 mb-2 executa-stat-value">
+                            <h:outputText value="#{dashboardController.revenueTotal}">
+                                <f:convertNumber pattern="R$ #,##0.00" locale="pt_BR"/>
+                            </h:outputText>
+                        </h3>
+                        <small class="executa-text-muted">Ordens concluídas</small>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="card h-full">
+                        <p class="executa-page-caption m-0 mb-2">
+                            <i class="pi pi-percentage mr-2"/>Taxa de conclusão
+                        </p>
+                        <h3 class="m-0 mb-2 executa-stat-value">#{dashboardController.completionRate}%</h3>
+                        <small class="executa-text-muted">Sobre o total de ordens</small>
+                    </div>
+                </div>
+
+                <div class="col-12 lg:col-6">
+                    <div class="card h-full">
+                        <h5 class="mt-0 mb-3">Ordens por status</h5>
+                        <div class="grid">
+                            <div class="col-6">
+                                <div class="executa-status-item flex justify-content-between align-items-center mb-3">
+                                    <span class="executa-page-caption m-0">Abertas</span>
+                                    <p:tag value="#{dashboardController.statusOpenCount}" severity="info"/>
+                                </div>
+                                <div class="executa-status-item flex justify-content-between align-items-center mb-3">
+                                    <span class="executa-page-caption m-0">Em andamento</span>
+                                    <p:tag value="#{dashboardController.statusInProgressCount}" severity="warn"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="executa-status-item flex justify-content-between align-items-center mb-3">
+                                    <span class="executa-page-caption m-0">Concluídas</span>
+                                    <p:tag value="#{dashboardController.statusCompletedCount}" severity="success"/>
+                                </div>
+                                <div class="executa-status-item flex justify-content-between align-items-center mb-3">
+                                    <span class="executa-page-caption m-0">Canceladas</span>
+                                    <p:tag value="#{dashboardController.statusCancelledCount}" severity="danger"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 lg:col-6">
+                    <div class="card h-full">
+                        <h5 class="mt-0 mb-3">Resumo financeiro</h5>
+                        <div class="executa-status-item flex justify-content-between align-items-center mb-3">
+                            <span class="executa-page-caption m-0">Receita total</span>
+                            <span class="executa-stat-value text-xl">
+                                <h:outputText value="#{dashboardController.revenueTotal}">
+                                    <f:convertNumber pattern="R$ #,##0.00" locale="pt_BR"/>
+                                </h:outputText>
+                            </span>
+                        </div>
+                        <div class="executa-status-item flex justify-content-between align-items-center mb-3">
+                            <span class="executa-page-caption m-0">Ordens concluídas</span>
+                            <p:tag value="#{dashboardController.statusCompletedCount}" severity="success"/>
+                        </div>
+                        <div class="executa-status-item flex justify-content-between align-items-center">
+                            <span class="executa-page-caption m-0">Taxa de conclusão</span>
+                            <span class="font-semibold">#{dashboardController.completionRate}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="flex justify-content-between align-items-center mb-3">
+                            <h5 class="m-0">Ordens recentes</h5>
+                            <p:button value="Ver todas"
+                                      icon="pi pi-arrow-right"
+                                      iconPos="right"
+                                      outcome="service-order.xhtml"
+                                      styleClass="ui-button-outlined"/>
+                        </div>
+
+                        <p:dataTable value="#{dashboardController.recentOrders}"
+                                     var="order"
+                                     rows="5"
+                                     paginator="false"
+                                     emptyMessage="Nenhuma ordem registrada.">
+
+                            <p:column headerText="Número" sortBy="#{order.number}">
+                                <h:outputText value="#{order.number}"/>
+                            </p:column>
+
+                            <p:column headerText="Cliente" sortBy="#{order.client.name}">
+                                <h:outputText value="#{order.client.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Descrição">
+                                <h:outputText value="#{order.description}" rendered="#{not empty order.description}"/>
+                                <h:outputText value="—" styleClass="executa-text-muted" rendered="#{empty order.description}"/>
+                            </p:column>
+
+                            <p:column headerText="Status">
+                                <p:tag value="Aberta" severity="info" rendered="#{order.status.name() eq 'OPEN'}"/>
+                                <p:tag value="Em andamento" severity="warn" rendered="#{order.status.name() eq 'IN_PROGRESS'}"/>
+                                <p:tag value="Concluída" severity="success" rendered="#{order.status.name() eq 'COMPLETED'}"/>
+                                <p:tag value="Cancelada" severity="danger" rendered="#{order.status.name() eq 'CANCELLED'}"/>
+                            </p:column>
+
+                            <p:column headerText="Valor" styleClass="text-right">
+                                <h:outputText value="#{order.totalAmount}">
+                                    <f:convertNumber pattern="R$ #,##0.00" locale="pt_BR"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </div>
+            </div>
+        </ui:define>
+    </ui:composition>
+</html>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="jakarta.faces.core">
+
+    <h:head>
+        <title>Criar conta — Ordens de Serviço</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta name="description" content="Cadastro no sistema de ordens de serviço"/>
+        <meta name="theme-color" content="#10b981"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+        <h:outputStylesheet library="manhattan-layout" name="css/primeflex.min.css"/>
+        <h:outputStylesheet name="primeicons/primeicons.css" library="primefaces"/>
+    </h:head>
+
+    <h:body styleClass="executa-login">
+        <main class="flex align-items-center justify-content-center min-h-screen px-4 py-5" role="main">
+            <div class="executa-login-panel w-full">
+                <header class="executa-login-header mb-5">
+                    <h1 class="executa-login-title m-0 mb-2">Criar conta</h1>
+                    <p class="executa-login-caption m-0">Preencha os dados para se cadastrar</p>
+                </header>
+
+                <div class="executa-login-form w-full">
+                    <h:form id="registerForm" prependId="false">
+                        <p:growl id="messages"
+                                 showDetail="true"
+                                 skipDetailIfEqualsSummary="true"
+                                 life="5000"/>
+
+                        <div class="flex flex-column gap-4">
+                            <div class="field">
+                                <p:outputLabel for="name" value="Nome" styleClass="block mb-2 font-medium"/>
+                                <p:inputText id="name"
+                                             value="#{userController.registerName}"
+                                             maxlength="150"
+                                             required="true"
+                                             requiredMessage="Informe seu nome."
+                                             styleClass="w-full executa-input"/>
+                            </div>
+
+                            <div class="field">
+                                <p:outputLabel for="email" value="E-mail" styleClass="block mb-2 font-medium"/>
+                                <p:inputText id="email"
+                                             value="#{userController.registerEmail}"
+                                             type="email"
+                                             autocomplete="username"
+                                             placeholder="nome@empresa.com"
+                                             required="true"
+                                             requiredMessage="Informe o e-mail."
+                                             styleClass="w-full executa-input">
+                                    <f:validateRegex pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                                     message="E-mail inválido."/>
+                                </p:inputText>
+                                <p:message for="email" display="text" styleClass="executa-field-message"/>
+                            </div>
+
+                            <div class="field">
+                                <p:outputLabel for="password" value="Senha" styleClass="block mb-2 font-medium"/>
+                                <p:password id="password"
+                                            value="#{userController.registerPassword}"
+                                            autocomplete="new-password"
+                                            placeholder="Mínimo 6 caracteres"
+                                            required="true"
+                                            requiredMessage="Informe a senha."
+                                            toggleMask="true"
+                                            styleClass="w-full executa-input"/>
+                            </div>
+
+                            <div class="field">
+                                <p:outputLabel for="passwordConfirm" value="Confirmar senha" styleClass="block mb-2 font-medium"/>
+                                <p:password id="passwordConfirm"
+                                            value="#{userController.registerPasswordConfirm}"
+                                            autocomplete="new-password"
+                                            placeholder="Repita a senha"
+                                            required="true"
+                                            requiredMessage="Confirme a senha."
+                                            toggleMask="true"
+                                            styleClass="w-full executa-input"/>
+                            </div>
+
+                            <p:commandButton id="registerButton"
+                                             value="Cadastrar"
+                                             action="#{userController.register}"
+                                             process="@form"
+                                             update="messages"
+                                             styleClass="w-full executa-btn-primary"/>
+
+                            <div class="text-center">
+                                <span class="executa-login-caption">Já tem conta? </span>
+                                <h:link outcome="login" value="Entrar" styleClass="executa-link"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </div>
+            </div>
+        </main>
+        <h:outputStylesheet library="manhattan-layout" name="css/executa.css"/>
+    </h:body>
+</html>

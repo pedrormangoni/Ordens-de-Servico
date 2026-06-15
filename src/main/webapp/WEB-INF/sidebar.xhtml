@@ -1,0 +1,53 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+
+    <div class="layout-sidebar">
+        <div class="layout-sidebar-logo">
+            <a href="#" id="layout-sidebar-anchor" class="layout-sidebar-anchor" title="Alternar menu">
+                <i class="pi pi-bars"/>
+            </a>
+        </div>
+
+        <div class="layout-menu-container">
+            <h:form id="menuform">
+                <ul class="layout-menu">
+                    <li id="menuform:mnuDashboard">
+                        <h:link outcome="dashboard.xhtml">
+                            <i class="layout-menuitem-icon pi pi-fw pi-home"/>
+                            <span>Dashboard</span>
+                        </h:link>
+                    </li>
+                    <li id="menuform:mnuServiceOrders">
+                        <h:link outcome="service-order.xhtml">
+                            <i class="layout-menuitem-icon pi pi-fw pi-list"/>
+                            <span>Ordens de Serviço</span>
+                        </h:link>
+                    </li>
+                    <li id="menuform:mnuClients">
+                        <h:link outcome="clients.xhtml">
+                            <i class="layout-menuitem-icon pi pi-fw pi-users"/>
+                            <span>Clientes</span>
+                        </h:link>
+                    </li>
+                    <li id="menuform:mnuServices">
+                        <h:link outcome="services.xhtml">
+                            <i class="layout-menuitem-icon pi pi-fw pi-briefcase"/>
+                            <span>Serviços</span>
+                        </h:link>
+                    </li>
+                    <li id="menuform:mnuCashFlow">
+                        <h:link outcome="cash-flow.xhtml">
+                            <i class="layout-menuitem-icon pi pi-fw pi-wallet"/>
+                            <span>Fluxo de Caixa</span>
+                        </h:link>
+                    </li>
+                </ul>
+            </h:form>
+        </div>
+    </div>
+
+</ui:composition>
