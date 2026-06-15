@@ -198,11 +198,28 @@ public class ServiceOrderController implements Serializable {
         if (selected == null) {
             return;
         }
-        serviceOrderFacade.remove(selected);
+        if (!canDelete()) {
+            addMessage(FacesMessage.SEVERITY_ERROR,
+                    "Não é possível excluir esta ordem porque existem lançamentos no fluxo de caixa vinculados.");
+            return;
+        }
+        try {
+            serviceOrderFacade.remove(selected);
+        } catch (EJBException ex) {
+            addMessage(FacesMessage.SEVERITY_ERROR, resolveDeleteError(ex));
+            return;
+        }
         selected = null;
         selectedItems = Collections.emptyList();
         findAll();
         addMessage(FacesMessage.SEVERITY_INFO, "Ordem excluída com sucesso.");
+    }
+
+    public boolean canDelete() {
+        if (selected == null || selected.getId() == null) {
+            return false;
+        }
+        return cashFlowFacade.countByServiceOrderId(selected.getId()) == 0;
     }
 
     public void startProgressSelected() {
@@ -328,6 +345,23 @@ public class ServiceOrderController implements Serializable {
 
     private void addMessage(FacesMessage.Severity severity, String summary) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, null));
+    }
+
+    private String resolveDeleteError(EJBException ex) {
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            String message = cause.getMessage();
+            if (message != null && (message.contains("fk_cash_flow_service_order")
+                    || message.toLowerCase().contains("foreign key")
+                    || message.toLowerCase().contains("chave estrangeira")
+                    || message.toLowerCase().contains("still referenced")
+                    || message.toLowerCase().contains("ainda é referenciada")
+                    || message.toLowerCase().contains("ainda e referenciada"))) {
+                return "Não é possível excluir esta ordem porque existem lançamentos no fluxo de caixa vinculados.";
+            }
+            cause = cause.getCause();
+        }
+        return "Erro ao excluir a ordem de serviço.";
     }
 
     public void findByStatus(ServiceOrderStatus status) {

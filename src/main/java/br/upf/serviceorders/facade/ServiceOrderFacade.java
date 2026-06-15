@@ -149,6 +149,17 @@ public class ServiceOrderFacade extends AbstractFacade<ServiceOrderEntity> {
             .getResultList();
     }
 
+    public long countByClientId(Long clientId) {
+        if (clientId == null) {
+            return 0;
+        }
+        return em.createQuery(
+                "SELECT COUNT(o) FROM ServiceOrderEntity o WHERE o.client.id = :clientId",
+                Long.class)
+                .setParameter("clientId", clientId)
+                .getSingleResult();
+    }
+
     private String generateNumber() {
         Long seq = em.createQuery(
                 "SELECT COALESCE(MAX(o.id), 0) + 1 FROM ServiceOrderEntity o", Long.class)

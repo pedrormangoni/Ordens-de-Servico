@@ -97,11 +97,16 @@
                                                          styleClass="ui-button-sm ui-button-outlined ui-button-danger"
                                                          actionListener="#{clientController.delete(item)}"
                                                          update="frmList"
-                                                         process="@this">
+                                                         process="@this"
+                                                         rendered="#{clientController.canDelete(item)}">
                                             <p:confirm header="Excluir cliente"
                                                        message="Deseja excluir #{item.name}?"
                                                        icon="pi pi-exclamation-triangle"/>
                                         </p:commandButton>
+                                        <h:outputText value="—"
+                                                      styleClass="executa-text-muted"
+                                                      title="Cliente com ordens de serviço vinculadas"
+                                                      rendered="#{not clientController.canDelete(item)}"/>
                                     </div>
                                 </p:column>
                             </p:dataTable>
@@ -142,6 +147,8 @@
                             <p:inputMask id="iptDocument"
                                          value="#{clientController.client.document}"
                                          mask="999.999.999-99"
+                                         unmask="true"
+                                         validateClient="false"
                                          styleClass="w-full"
                                          required="true"
                                          requiredMessage="Informe o CPF do cliente"/>
@@ -218,6 +225,8 @@
                             <p:inputMask id="iptDocumentEdit"
                                          value="#{clientController.selected.document}"
                                          mask="999.999.999-99"
+                                         unmask="true"
+                                         validateClient="false"
                                          styleClass="w-full"
                                          required="true"
                                          requiredMessage="Informe o CPF do cliente"/>

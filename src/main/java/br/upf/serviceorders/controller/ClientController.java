@@ -2,6 +2,7 @@ package br.upf.serviceorders.controller;
 
 import br.upf.serviceorders.entity.ClientEntity;
 import br.upf.serviceorders.facade.ClientFacade;
+import br.upf.serviceorders.facade.ServiceOrderFacade;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
@@ -28,6 +29,9 @@ public class ClientController implements Serializable {
 
     @EJB
     private ClientFacade clientFacade;
+
+    @EJB
+    private ServiceOrderFacade serviceOrderFacade;
 
     private ClientEntity client;
     private List<ClientEntity> list;
@@ -95,12 +99,32 @@ public class ClientController implements Serializable {
     }
 
     public void delete(ClientEntity item) {
-        clientFacade.remove(item);
+        if (item == null || item.getId() == null) {
+            return;
+        }
+        if (!canDelete(item)) {
+            addMessage(FacesMessage.SEVERITY_ERROR,
+                    "Não é possível excluir este cliente porque existem ordens de serviço vinculadas.");
+            return;
+        }
+        try {
+            clientFacade.remove(item);
+        } catch (EJBException ex) {
+            addMessage(FacesMessage.SEVERITY_ERROR, resolvePersistenceError(ex));
+            return;
+        }
         if (selected != null && selected.equals(item)) {
             selected = null;
         }
         addMessage(FacesMessage.SEVERITY_INFO, "Cliente excluído.");
         findAll();
+    }
+
+    public boolean canDelete(ClientEntity item) {
+        if (item == null || item.getId() == null) {
+            return false;
+        }
+        return serviceOrderFacade.countByClientId(item.getId()) == 0;
     }
 
     public void findAll() {
@@ -122,9 +146,9 @@ public class ClientController implements Serializable {
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Informe o CPF do cliente", null));
             valid = false;
-        } else if (!CPF_DIGITS_PATTERN.matcher(cpf).matches() || !isValidCpf(cpf)) {
+        } else if (cpf.length() != 11 || !CPF_DIGITS_PATTERN.matcher(cpf).matches() || !isValidCpf(cpf)) {
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "CPF inválido", null));
+                    "CPF inválido. Informe 11 dígitos.", null));
             valid = false;
         } else {
             ClientEntity existing = clientFacade.findByDocument(cpf);
@@ -216,7 +240,26 @@ public class ClientController implements Serializable {
         if (isDuplicateDocumentError(cause)) {
             return "CPF já cadastrado para outro cliente.";
         }
-        return "Erro ao salvar no banco. Verifique a migration e a conexão com o PostgreSQL.";
+        if (isForeignKeyReferenceError(cause)) {
+            return "Não é possível excluir este cliente porque existem ordens de serviço vinculadas.";
+        }
+        return "Erro ao salvar no banco. Verifique o schema.sql e a conexão com o PostgreSQL.";
+    }
+
+    private boolean isForeignKeyReferenceError(Throwable cause) {
+        while (cause != null) {
+            String message = cause.getMessage();
+            if (message != null && (message.contains("fk_service_order_client")
+                    || message.toLowerCase().contains("foreign key")
+                    || message.toLowerCase().contains("chave estrangeira")
+                    || message.toLowerCase().contains("still referenced")
+                    || message.toLowerCase().contains("ainda é referenciada")
+                    || message.toLowerCase().contains("ainda e referenciada"))) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 
     private boolean isDuplicateDocumentError(Throwable cause) {

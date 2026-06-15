@@ -37,7 +37,11 @@ public class CashFlowController implements Serializable {
     public void init() {
         cashFlow = new CashFlowEntity();
         list = new ArrayList<>();
-        resetPeriodDates();
+        periodStartDate = null;
+        periodEndDate = null;
+    }
+
+    public void refresh() {
         applyPeriodFilter();
     }
 
@@ -78,25 +82,20 @@ public class CashFlowController implements Serializable {
     }
 
     public void findAll() {
-        list = cashFlowFacade.findAllOrdered();
+        list = cashFlowFacade.findFiltered(periodStartDate, periodEndDate);
     }
 
     public void applyPeriodFilter() {
-        if (periodStartDate != null && periodEndDate != null) {
-            if (periodStartDate.isAfter(periodEndDate)) {
-                addMessage(FacesMessage.SEVERITY_ERROR, "A data inicial não pode ser maior que a final.");
-                return;
-            }
-            list = cashFlowFacade.findByPeriod(
-                    periodStartDate.atStartOfDay(),
-                    periodEndDate.atTime(23, 59, 59));
-        } else {
-            findAll();
+        if (periodStartDate != null && periodEndDate != null && periodStartDate.isAfter(periodEndDate)) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "A data inicial não pode ser maior que a final.");
+            return;
         }
+        list = cashFlowFacade.findFiltered(periodStartDate, periodEndDate);
     }
 
     public void clearPeriodFilter() {
-        resetPeriodDates();
+        periodStartDate = null;
+        periodEndDate = null;
         searchTerm = null;
         applyPeriodFilter();
     }
@@ -147,7 +146,8 @@ public class CashFlowController implements Serializable {
         return contains(item.getDescription(), term)
                 || contains(item.getPaymentMethod(), term)
                 || contains(formatType(item.getType()), term)
-                || contains(formatServiceOrder(item), term);
+                || contains(formatServiceOrder(item), term)
+                || (item.getAmount() != null && item.getAmount().toPlainString().contains(term));
     }
 
     private boolean contains(String value, String term) {
@@ -155,10 +155,11 @@ public class CashFlowController implements Serializable {
     }
 
     private BigDecimal sumByType(CashFlowType type) {
-        if (list == null || list.isEmpty()) {
+        List<CashFlowEntity> source = getFilteredList();
+        if (source.isEmpty()) {
             return BigDecimal.ZERO;
         }
-        return list.stream()
+        return source.stream()
                 .filter(item -> item.getType() == type)
                 .map(CashFlowEntity::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -198,11 +199,6 @@ public class CashFlowController implements Serializable {
         if (entity.getTransactionDate() == null) {
             entity.setTransactionDate(LocalDateTime.now());
         }
-    }
-
-    private void resetPeriodDates() {
-        periodStartDate = LocalDate.now().withDayOfMonth(1);
-        periodEndDate = LocalDate.now();
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary) {

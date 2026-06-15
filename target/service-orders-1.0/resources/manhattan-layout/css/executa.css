@@ -312,93 +312,74 @@ body.executa-login a.executa-link:hover {
     max-width: 92vw;
 }
 
-/* Sidebar slim — ícones visíveis com menu recolhido */
+/* Toolbar de páginas */
+.executa-page-toolbar .field {
+    min-width: 0;
+}
+
+.executa-page-toolbar .executa-field-date .ui-datepicker,
+.executa-page-toolbar .executa-field-date .p-datepicker {
+    display: inline-flex;
+    align-items: stretch;
+    position: relative;
+    width: 10rem;
+    max-width: 100%;
+    vertical-align: middle;
+}
+
+.executa-page-toolbar .executa-field-date .ui-datepicker input,
+.executa-page-toolbar .executa-field-date .p-datepicker input {
+    flex: 1 1 auto;
+    width: auto !important;
+    min-width: 0;
+}
+
+.executa-page-toolbar .executa-field-date .ui-datepicker-trigger.ui-button,
+.executa-page-toolbar .executa-field-date .p-datepicker .ui-datepicker-trigger.ui-button {
+    position: static !important;
+    right: auto !important;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.executa-page-toolbar .executa-filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    align-self: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
+.executa-page-toolbar .executa-filter-actions .ui-button {
+    white-space: nowrap;
+}
+
+/* Sidebar slim — respeita posição nativa (left:-200px) para exibir ícones à direita */
 @media (min-width: 1281px) {
-    .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar {
-        left: 0 !important;
-        width: 70px !important;
-        overflow: visible;
-    }
-
-    .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu-container {
-        overflow-x: visible;
-        overflow-y: auto;
-    }
-
-    .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-sidebar-logo {
-        text-align: center;
-        padding: 16px 8px;
-    }
-
-    .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-sidebar-logo .layout-sidebar-anchor {
-        float: none;
-        display: inline-block;
-    }
-
-    .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-sidebar-logo .layout-sidebar-anchor i.pi:before {
-        content: "\e91d";
-    }
-
-    .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu {
-        margin-top: 8px;
-    }
-
-    .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu li > a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 0;
-        text-align: center;
-    }
-
     .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu li > a span {
         display: none !important;
     }
 
     .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu li > a i.layout-menuitem-icon,
     .layout-wrapper.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu li > a i:first-child {
-        float: none !important;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        width: 36px !important;
-        height: 36px !important;
-        line-height: 1 !important;
-        margin: 0 !important;
-        font-size: 18px !important;
+        float: right !important;
         visibility: visible !important;
         opacity: 1 !important;
+        font-family: 'primeicons' !important;
     }
 
-    .layout-wrapper.layout-light.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu li > a i.layout-menuitem-icon,
-    .layout-wrapper.layout-light.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu li > a i:first-child {
-        color: #575867 !important;
-        background-color: #d9d9de !important;
-        border-radius: 4px;
+    .layout-wrapper.layout-slim .layout-sidebar .layout-sidebar-logo .layout-sidebar-anchor i.pi {
+        font-family: 'primeicons' !important;
+        font-style: normal;
     }
 
-    .layout-wrapper.layout-light.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu > li.active-menuitem > a i.layout-menuitem-icon,
-    .layout-wrapper.layout-light.layout-slim:not(.layout-slim-active):not(.layout-slim-anchored) .layout-sidebar .layout-menu > li.active-menuitem > a i:first-child {
-        color: #ffffff !important;
-        background-color: #10B981 !important;
+    .layout-wrapper.layout-slim .layout-sidebar .layout-sidebar-logo .layout-sidebar-anchor i.pi:before {
+        content: "\e91d" !important;
     }
 
-    .layout-wrapper.layout-slim.layout-slim-active .layout-sidebar,
-    .layout-wrapper.layout-slim.layout-slim-anchored .layout-sidebar {
-        left: 0 !important;
-        width: 270px !important;
-    }
-
-    .layout-wrapper.layout-slim.layout-slim-active .layout-sidebar .layout-menu li > a span,
-    .layout-wrapper.layout-slim.layout-slim-anchored .layout-sidebar .layout-menu li > a span {
-        display: inline-block !important;
-    }
-
-    .layout-wrapper.layout-slim.layout-slim-active .layout-sidebar .layout-menu li > a,
-    .layout-wrapper.layout-slim.layout-slim-anchored .layout-sidebar .layout-menu li > a {
-        display: block;
-        padding: 4px 16px;
-        text-align: left;
+    .layout-wrapper.layout-slim.layout-slim-anchored .layout-sidebar .layout-sidebar-logo .layout-sidebar-anchor i.pi:before {
+        content: "\e911" !important;
     }
 }
 

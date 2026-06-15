@@ -268,7 +268,8 @@
                                          value="Excluir"
                                          icon="pi pi-trash"
                                          styleClass="ui-button-outlined ui-button-danger"
-                                         disabled="#{not serviceOrderController.hasSelection()}"
+                                         disabled="#{not serviceOrderController.canDelete()}"
+                                         title="#{serviceOrderController.canDelete() ? 'Excluir ordem' : 'Ordem com lançamento no fluxo de caixa'}"
                                          process="@this"
                                          actionListener="#{serviceOrderController.deleteSelected()}"
                                          update=":frmList:growl :frmList:datalist :frmList:selectedPanel :frmList:osActions">

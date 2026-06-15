@@ -40,7 +40,6 @@ public class ClientEntity implements Serializable {
     private String name;
 
     @NotNull
-    @Size(min = 11, max = 11)
     @Basic(optional = false)
     @Column(name = "document", unique = true, length = 11)
     private String document;
@@ -83,7 +82,12 @@ public class ClientEntity implements Serializable {
     }
 
     public void setDocument(String document) {
-        this.document = document;
+        if (document == null) {
+            this.document = null;
+            return;
+        }
+        String digits = document.replaceAll("\\D", "");
+        this.document = digits.isEmpty() ? null : digits;
     }
 
     public String getPhone() {

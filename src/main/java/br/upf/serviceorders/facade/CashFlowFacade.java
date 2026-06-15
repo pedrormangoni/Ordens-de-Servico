@@ -6,6 +6,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,10 +26,34 @@ public class CashFlowFacade extends AbstractFacade<CashFlowEntity> {
     }
 
     public List<CashFlowEntity> findAllOrdered() {
-        return em.createQuery(
-            "SELECT c FROM CashFlowEntity c LEFT JOIN FETCH c.serviceOrder ORDER BY c.transactionDate DESC",
-            CashFlowEntity.class)
-            .getResultList();
+        return findFiltered(null, null);
+    }
+
+    public List<CashFlowEntity> findFiltered(LocalDate startDate, LocalDate endDate) {
+        StringBuilder jpql = new StringBuilder("SELECT c FROM CashFlowEntity c");
+        boolean hasWhere = false;
+
+        if (startDate != null) {
+            jpql.append(" WHERE c.transactionDate >= :start");
+            hasWhere = true;
+        }
+        if (endDate != null) {
+            jpql.append(hasWhere ? " AND" : " WHERE");
+            jpql.append(" c.transactionDate <= :end");
+        }
+        jpql.append(" ORDER BY c.transactionDate DESC");
+
+        var query = em.createQuery(jpql.toString(), CashFlowEntity.class);
+        if (startDate != null) {
+            query.setParameter("start", startDate.atStartOfDay());
+        }
+        if (endDate != null) {
+            query.setParameter("end", endDate.atTime(23, 59, 59));
+        }
+
+        List<CashFlowEntity> items = query.getResultList();
+        initializeServiceOrders(items);
+        return items;
     }
 
     public List<CashFlowEntity> findByType(CashFlowType type) {
@@ -40,13 +65,17 @@ public class CashFlowFacade extends AbstractFacade<CashFlowEntity> {
     }
 
     public List<CashFlowEntity> findByPeriod(LocalDateTime start, LocalDateTime end) {
-        return em.createQuery(
-            "SELECT c FROM CashFlowEntity c LEFT JOIN FETCH c.serviceOrder "
-            + "WHERE c.transactionDate BETWEEN :start AND :end ORDER BY c.transactionDate DESC",
-            CashFlowEntity.class)
-            .setParameter("start", start)
-            .setParameter("end", end)
-            .getResultList();
+        LocalDate startDate = start != null ? start.toLocalDate() : null;
+        LocalDate endDate = end != null ? end.toLocalDate() : null;
+        return findFiltered(startDate, endDate);
+    }
+
+    private void initializeServiceOrders(List<CashFlowEntity> items) {
+        for (CashFlowEntity item : items) {
+            if (item.getServiceOrder() != null) {
+                item.getServiceOrder().getNumber();
+            }
+        }
     }
 
     public BigDecimal getBalanceByType(CashFlowType type) {
@@ -56,5 +85,16 @@ public class CashFlowFacade extends AbstractFacade<CashFlowEntity> {
             .setParameter("type", type)
             .getSingleResult();
         return result != null ? result : BigDecimal.ZERO;
+    }
+
+    public long countByServiceOrderId(Long serviceOrderId) {
+        if (serviceOrderId == null) {
+            return 0;
+        }
+        return em.createQuery(
+                "SELECT COUNT(c) FROM CashFlowEntity c WHERE c.serviceOrder.id = :serviceOrderId",
+                Long.class)
+                .setParameter("serviceOrderId", serviceOrderId)
+                .getSingleResult();
     }
 }
