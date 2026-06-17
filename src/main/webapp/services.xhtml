@@ -26,17 +26,31 @@
                         <p:growl id="growl" showDetail="true" life="4000"/>
 
                         <div class="executa-page-toolbar flex flex-column md:flex-row justify-content-between align-items-stretch md:align-items-center gap-3 mb-3">
-                            <span class="p-input-icon-left w-full md:w-20rem">
-                                <i class="pi pi-search"/>
-                                <p:inputText id="searchTerm"
-                                             value="#{serviceController.searchTerm}"
-                                             placeholder="Pesquisar serviço...">
-                                    <p:ajax event="keyup"
-                                            process="@this"
-                                            update="servicesTable"
-                                            delay="300"/>
-                                </p:inputText>
-                            </span>
+                            <div class="flex flex-column md:flex-row gap-3 flex-grow-1">
+                                <span class="p-input-icon-left w-full md:w-20rem">
+                                    <i class="pi pi-search"/>
+                                    <p:inputText id="searchTerm"
+                                                 value="#{serviceController.searchTerm}"
+                                                 placeholder="Pesquisar serviço...">
+                                        <p:ajax event="keyup"
+                                                process="@this"
+                                                update="servicesTable"
+                                                delay="300"/>
+                                    </p:inputText>
+                                </span>
+                                <div class="field m-0">
+                                    <p:selectOneMenu id="activeFilter"
+                                                     value="#{serviceController.activeFilter}"
+                                                     styleClass="w-full md:w-12rem">
+                                        <f:selectItem itemLabel="Todos os status" itemValue="#{null}"/>
+                                        <f:selectItem itemLabel="Ativos" itemValue="#{true}"/>
+                                        <f:selectItem itemLabel="Inativos" itemValue="#{false}"/>
+                                        <p:ajax event="change"
+                                                process="@this"
+                                                update="servicesTable"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
                             <p:commandButton id="btnCreate"
                                              value="Novo Serviço"
                                              icon="pi pi-plus"
@@ -59,7 +73,7 @@
                                          rowsPerPageTemplate="10,25,50"
                                          paginatorPosition="bottom"
                                          responsiveLayout="scroll"
-                                         emptyMessage="Nenhum serviço cadastrado.">
+                                         emptyMessage="Nenhum serviço encontrado.">
 
                                 <p:column headerText="Nome" sortBy="#{item.name}">
                                     <h:outputText value="#{item.name}"/>
@@ -99,11 +113,16 @@
                                                          styleClass="ui-button-sm ui-button-outlined ui-button-danger"
                                                          actionListener="#{serviceController.delete(item)}"
                                                          update="frmList"
-                                                         process="@this">
+                                                         process="@this"
+                                                         rendered="#{serviceController.canDelete(item)}">
                                             <p:confirm header="Excluir serviço"
                                                        message="Deseja excluir #{item.name}?"
                                                        icon="pi pi-exclamation-triangle"/>
                                         </p:commandButton>
+                                        <h:outputText value="—"
+                                                      styleClass="executa-text-muted"
+                                                      title="Serviço vinculado a ordens de serviço"
+                                                      rendered="#{not serviceController.canDelete(item)}"/>
                                     </div>
                                 </p:column>
                             </p:dataTable>

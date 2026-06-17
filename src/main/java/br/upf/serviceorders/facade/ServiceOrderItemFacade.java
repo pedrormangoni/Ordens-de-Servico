@@ -35,4 +35,15 @@ public class ServiceOrderItemFacade extends AbstractFacade<ServiceOrderItemEntit
             .setParameter("orderId", serviceOrder.getId())
             .getResultList();
     }
+
+    public long countByServiceId(Long serviceId) {
+        if (serviceId == null) {
+            return 0;
+        }
+        return em.createQuery(
+                "SELECT COUNT(i) FROM ServiceOrderItemEntity i WHERE i.service.id = :serviceId",
+                Long.class)
+                .setParameter("serviceId", serviceId)
+                .getSingleResult();
+    }
 }

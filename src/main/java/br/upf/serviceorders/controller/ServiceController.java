@@ -3,6 +3,7 @@ package br.upf.serviceorders.controller;
 import br.upf.serviceorders.entity.ServiceEntity;
 import br.upf.serviceorders.entity.UserEntity;
 import br.upf.serviceorders.facade.ServiceFacade;
+import br.upf.serviceorders.facade.ServiceOrderItemFacade;
 import br.upf.serviceorders.util.MonetaryAmounts;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -28,6 +29,9 @@ public class ServiceController implements Serializable {
     @EJB
     private ServiceFacade serviceFacade;
 
+    @EJB
+    private ServiceOrderItemFacade serviceOrderItemFacade;
+
     @Inject
     private UserController userController;
 
@@ -35,6 +39,7 @@ public class ServiceController implements Serializable {
     private List<ServiceEntity> list;
     private ServiceEntity selected;
     private String searchTerm;
+    private Boolean activeFilter;
 
     @PostConstruct
     public void init() {
@@ -96,12 +101,32 @@ public class ServiceController implements Serializable {
     }
 
     public void delete(ServiceEntity item) {
-        serviceFacade.remove(item);
+        if (item == null || item.getId() == null) {
+            return;
+        }
+        if (!canDelete(item)) {
+            addMessage(FacesMessage.SEVERITY_ERROR,
+                    "Não é possível excluir este serviço porque existem ordens de serviço vinculadas.");
+            return;
+        }
+        try {
+            serviceFacade.remove(item);
+        } catch (EJBException ex) {
+            addMessage(FacesMessage.SEVERITY_ERROR, resolveDeleteError(ex));
+            return;
+        }
         if (selected != null && selected.equals(item)) {
             selected = null;
         }
         addMessage(FacesMessage.SEVERITY_INFO, "Serviço excluído.");
         findAll();
+    }
+
+    public boolean canDelete(ServiceEntity item) {
+        if (item == null || item.getId() == null) {
+            return false;
+        }
+        return serviceOrderItemFacade.countByServiceId(item.getId()) == 0;
     }
 
     public void findAll() {
@@ -112,13 +137,24 @@ public class ServiceController implements Serializable {
         if (list == null || list.isEmpty()) {
             return Collections.emptyList();
         }
-        if (searchTerm == null || searchTerm.isBlank()) {
-            return list;
-        }
-        String term = searchTerm.toLowerCase().trim();
         return list.stream()
-                .filter(item -> matchesSearch(item, term))
+                .filter(this::matchesActiveFilter)
+                .filter(this::matchesSearchFilter)
                 .collect(Collectors.toList());
+    }
+
+    private boolean matchesActiveFilter(ServiceEntity item) {
+        if (activeFilter == null) {
+            return true;
+        }
+        return item.isActive() == activeFilter;
+    }
+
+    private boolean matchesSearchFilter(ServiceEntity item) {
+        if (searchTerm == null || searchTerm.isBlank()) {
+            return true;
+        }
+        return matchesSearch(item, searchTerm.toLowerCase().trim());
     }
 
     private boolean matchesSearch(ServiceEntity item, String term) {
@@ -199,12 +235,43 @@ public class ServiceController implements Serializable {
         return "Erro ao salvar no banco. Verifique a conexão e os dados informados.";
     }
 
+    private String resolveDeleteError(EJBException ex) {
+        if (isForeignKeyReferenceError(ex)) {
+            return "Não é possível excluir este serviço porque existem ordens de serviço vinculadas.";
+        }
+        return "Erro ao excluir o serviço.";
+    }
+
+    private boolean isForeignKeyReferenceError(Throwable cause) {
+        while (cause != null) {
+            String message = cause.getMessage();
+            if (message != null && (message.contains("fk_item_service")
+                    || message.toLowerCase().contains("foreign key")
+                    || message.toLowerCase().contains("chave estrangeira")
+                    || message.toLowerCase().contains("still referenced")
+                    || message.toLowerCase().contains("ainda é referenciada")
+                    || message.toLowerCase().contains("ainda e referenciada"))) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
     public String getSearchTerm() {
         return searchTerm;
     }
 
     public void setSearchTerm(String searchTerm) {
         this.searchTerm = searchTerm;
+    }
+
+    public Boolean getActiveFilter() {
+        return activeFilter;
+    }
+
+    public void setActiveFilter(Boolean activeFilter) {
+        this.activeFilter = activeFilter;
     }
 
     public ServiceEntity getService() {
