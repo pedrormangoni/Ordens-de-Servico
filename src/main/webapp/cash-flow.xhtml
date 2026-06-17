@@ -171,6 +171,10 @@
                                                   styleClass="#{item.serviceOrder == null ? 'executa-text-muted' : ''}"/>
                                 </p:column>
 
+                                <p:column headerText="Cadastrado por" sortBy="#{item.createdBy.name}">
+                                    <h:outputText value="#{cashFlowController.formatCreatedBy(item)}"/>
+                                </p:column>
+
                                 <p:column headerText="Valor" sortBy="#{item.amount}">
                                     <h:outputText value="#{item.amount}"
                                                   styleClass="#{item.type eq 'EXPENSE' ? 'text-red-500' : ''}">
@@ -241,10 +245,15 @@
                             <p:inputNumber id="iptAmount"
                                            value="#{cashFlowController.cashFlow.amount}"
                                            styleClass="w-full"
-                                           mode="currency"
-                                           currency="BRL"
+                                           mode="decimal"
+                                           minFractionDigits="2"
+                                           maxFractionDigits="2"
+                                           decimalSeparator=","
+                                           thousandSeparator="."
+                                           prefix="R$ "
                                            locale="pt_BR"
                                            minValue="0.01"
+                                           maxValue="99999999.99"
                                            required="true"
                                            requiredMessage="Informe o valor"/>
                         </div>

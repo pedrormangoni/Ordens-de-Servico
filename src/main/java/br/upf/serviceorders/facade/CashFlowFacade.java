@@ -30,7 +30,8 @@ public class CashFlowFacade extends AbstractFacade<CashFlowEntity> {
     }
 
     public List<CashFlowEntity> findFiltered(LocalDate startDate, LocalDate endDate) {
-        StringBuilder jpql = new StringBuilder("SELECT c FROM CashFlowEntity c");
+        StringBuilder jpql = new StringBuilder(
+                "SELECT c FROM CashFlowEntity c LEFT JOIN FETCH c.createdBy");
         boolean hasWhere = false;
 
         if (startDate != null) {
@@ -52,7 +53,7 @@ public class CashFlowFacade extends AbstractFacade<CashFlowEntity> {
         }
 
         List<CashFlowEntity> items = query.getResultList();
-        initializeServiceOrders(items);
+        initializeRelations(items);
         return items;
     }
 
@@ -70,10 +71,13 @@ public class CashFlowFacade extends AbstractFacade<CashFlowEntity> {
         return findFiltered(startDate, endDate);
     }
 
-    private void initializeServiceOrders(List<CashFlowEntity> items) {
+    private void initializeRelations(List<CashFlowEntity> items) {
         for (CashFlowEntity item : items) {
             if (item.getServiceOrder() != null) {
                 item.getServiceOrder().getNumber();
+            }
+            if (item.getCreatedBy() != null) {
+                item.getCreatedBy().getName();
             }
         }
     }

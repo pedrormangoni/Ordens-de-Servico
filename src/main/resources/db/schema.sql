@@ -32,7 +32,10 @@ CREATE TABLE clients (
     email VARCHAR(150),
     address TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uk_clients_document UNIQUE (document)
+    created_by_id BIGINT,
+    CONSTRAINT uk_clients_document UNIQUE (document),
+    CONSTRAINT fk_clients_created_by
+        FOREIGN KEY (created_by_id) REFERENCES users (id)
 );
 
 CREATE TABLE services (
@@ -41,7 +44,10 @@ CREATE TABLE services (
     description TEXT,
     price NUMERIC(10, 2) NOT NULL DEFAULT 0,
     active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by_id BIGINT,
+    CONSTRAINT fk_services_created_by
+        FOREIGN KEY (created_by_id) REFERENCES users (id)
 );
 
 CREATE TABLE service_orders (
@@ -54,6 +60,7 @@ CREATE TABLE service_orders (
     total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
     opened_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP,
+    payment_method VARCHAR(50),
     CONSTRAINT fk_service_order_client
         FOREIGN KEY (client_id) REFERENCES clients (id),
     CONSTRAINT fk_service_order_user
@@ -82,6 +89,9 @@ CREATE TABLE cash_flow (
     amount NUMERIC(10, 2) NOT NULL,
     transaction_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     payment_method VARCHAR(50),
+    created_by_id BIGINT,
     CONSTRAINT fk_cash_flow_service_order
-        FOREIGN KEY (service_order_id) REFERENCES service_orders (id)
+        FOREIGN KEY (service_order_id) REFERENCES service_orders (id),
+    CONSTRAINT fk_cash_flow_created_by
+        FOREIGN KEY (created_by_id) REFERENCES users (id)
 );

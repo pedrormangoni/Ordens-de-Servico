@@ -79,6 +79,10 @@
                                     <h:outputText value="—" styleClass="executa-text-muted" rendered="#{empty item.email}"/>
                                 </p:column>
 
+                                <p:column headerText="Cadastrado por" sortBy="#{item.createdBy.name}">
+                                    <h:outputText value="#{clientController.formatCreatedBy(item)}"/>
+                                </p:column>
+
                                 <p:column headerText="Status" sortBy="#{item.createdAt}">
                                     <p:tag value="Ativo" severity="success"/>
                                 </p:column>

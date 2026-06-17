@@ -1,13 +1,16 @@
 package br.upf.serviceorders.controller;
 
 import br.upf.serviceorders.entity.ServiceEntity;
+import br.upf.serviceorders.entity.UserEntity;
 import br.upf.serviceorders.facade.ServiceFacade;
+import br.upf.serviceorders.util.MonetaryAmounts;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.validation.ConstraintViolationException;
 import java.io.Serializable;
@@ -24,6 +27,9 @@ public class ServiceController implements Serializable {
 
     @EJB
     private ServiceFacade serviceFacade;
+
+    @Inject
+    private UserController userController;
 
     private ServiceEntity service;
     private List<ServiceEntity> list;
@@ -50,7 +56,14 @@ public class ServiceController implements Serializable {
             PrimeFaces.current().ajax().addCallbackParam("saved", false);
             return;
         }
+        UserEntity loggedUser = userController.getLoggedUser();
+        if (loggedUser == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Usuário não autenticado. Faça login novamente.");
+            PrimeFaces.current().ajax().addCallbackParam("saved", false);
+            return;
+        }
         normalizeService(service);
+        service.setCreatedBy(loggedUser);
         try {
             serviceFacade.create(service);
         } catch (EJBException ex) {
@@ -110,7 +123,15 @@ public class ServiceController implements Serializable {
 
     private boolean matchesSearch(ServiceEntity item, String term) {
         return contains(item.getName(), term)
-                || contains(item.getDescription(), term);
+                || contains(item.getDescription(), term)
+                || contains(formatCreatedBy(item), term);
+    }
+
+    public String formatCreatedBy(ServiceEntity item) {
+        if (item == null || item.getCreatedBy() == null || item.getCreatedBy().getName() == null) {
+            return "—";
+        }
+        return item.getCreatedBy().getName();
     }
 
     private boolean contains(String value, String term) {
@@ -127,9 +148,9 @@ public class ServiceController implements Serializable {
             valid = false;
         }
 
-        if (entity.getPrice() == null || entity.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+        if (entity.getPrice() == null || !MonetaryAmounts.isWithinLimit(entity.getPrice())) {
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Informe um preço válido (maior ou igual a zero)", null));
+                    "Informe um preço entre R$ 0,00 e R$ 99.999.999,99", null));
             valid = false;
         }
 
@@ -141,9 +162,7 @@ public class ServiceController implements Serializable {
             entity.setName(entity.getName().trim());
         }
         entity.setDescription(trimToNull(entity.getDescription()));
-        if (entity.getPrice() == null) {
-            entity.setPrice(BigDecimal.ZERO);
-        }
+        entity.setPrice(MonetaryAmounts.normalize(entity.getPrice()));
     }
 
     private ServiceEntity newService() {
@@ -173,6 +192,9 @@ public class ServiceController implements Serializable {
                     .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                     .findFirst()
                     .orElse("Dados inválidos para salvar o serviço.");
+        }
+        if (MonetaryAmounts.isNumericOverflow(ex)) {
+            return "O preço informado excede o limite permitido (R$ 99.999.999,99).";
         }
         return "Erro ao salvar no banco. Verifique a conexão e os dados informados.";
     }

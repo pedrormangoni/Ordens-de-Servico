@@ -16,6 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
@@ -56,6 +58,8 @@ public class ServiceOrderEntity implements Serializable {
     private String description;
 
     @NotNull
+    @DecimalMin("0.00")
+    @DecimalMax("99999999.99")
     @Basic(optional = false)
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
@@ -67,6 +71,10 @@ public class ServiceOrderEntity implements Serializable {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @Size(max = 50)
+    @Column(name = "payment_method")
+    private String paymentMethod;
 
     // MAPEAMENTOS
     @ManyToOne(optional = false)
@@ -124,6 +132,14 @@ public class ServiceOrderEntity implements Serializable {
 
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public Long getId() {

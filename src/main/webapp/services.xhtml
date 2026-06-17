@@ -76,6 +76,10 @@
                                     </h:outputText>
                                 </p:column>
 
+                                <p:column headerText="Cadastrado por" sortBy="#{item.createdBy.name}">
+                                    <h:outputText value="#{serviceController.formatCreatedBy(item)}"/>
+                                </p:column>
+
                                 <p:column headerText="Status" sortBy="#{item.active}">
                                     <p:tag value="Ativo" severity="success" rendered="#{item.active}"/>
                                     <p:tag value="Inativo" severity="danger" rendered="#{not item.active}"/>
@@ -140,10 +144,15 @@
                             <p:inputNumber id="iptPrice"
                                            value="#{serviceController.service.price}"
                                            styleClass="w-full"
-                                           mode="currency"
-                                           currency="BRL"
+                                           mode="decimal"
+                                           minFractionDigits="2"
+                                           maxFractionDigits="2"
+                                           decimalSeparator=","
+                                           thousandSeparator="."
+                                           prefix="R$ "
                                            locale="pt_BR"
                                            minValue="0"
+                                           maxValue="99999999.99"
                                            required="true"
                                            requiredMessage="Informe o preço do serviço"/>
                         </div>
@@ -213,10 +222,15 @@
                                 <p:inputNumber id="iptPriceEdit"
                                                value="#{serviceController.selected.price}"
                                                styleClass="w-full"
-                                               mode="currency"
-                                               currency="BRL"
+                                               mode="decimal"
+                                               minFractionDigits="2"
+                                               maxFractionDigits="2"
+                                               decimalSeparator=","
+                                               thousandSeparator="."
+                                               prefix="R$ "
                                                locale="pt_BR"
                                                minValue="0"
+                                               maxValue="99999999.99"
                                                required="true"
                                                requiredMessage="Informe o preço do serviço"/>
                             </div>

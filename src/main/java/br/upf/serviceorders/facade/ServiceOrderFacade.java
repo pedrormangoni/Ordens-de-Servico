@@ -5,6 +5,7 @@ import br.upf.serviceorders.entity.ServiceOrderEntity;
 import br.upf.serviceorders.entity.ServiceOrderItemEntity;
 import br.upf.serviceorders.entity.UserEntity;
 import br.upf.serviceorders.enums.ServiceOrderStatus;
+import br.upf.serviceorders.util.MonetaryAmounts;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -44,20 +45,24 @@ public class ServiceOrderFacade extends AbstractFacade<ServiceOrderEntity> {
 
         BigDecimal total = BigDecimal.ZERO;
         for (ServiceOrderItemEntity item : items) {
+            BigDecimal quantity = MonetaryAmounts.normalize(item.getQuantity());
+            BigDecimal unitPrice = MonetaryAmounts.normalize(item.getUnit_price());
+            BigDecimal lineTotal = MonetaryAmounts.lineTotal(unitPrice, quantity);
+
             ServiceOrderItemEntity managedItem = new ServiceOrderItemEntity();
             managedItem.setServiceOrder(os);
             managedItem.setService(em.getReference(
                     br.upf.serviceorders.entity.ServiceEntity.class,
                     item.getService().getId()));
-            managedItem.setQuantity(item.getQuantity());
-            managedItem.setUnit_price(item.getUnit_price());
+            managedItem.setQuantity(quantity);
+            managedItem.setUnit_price(unitPrice);
             managedItem.setNotes(item.getNotes());
-            managedItem.setTotal_price(item.getUnit_price().multiply(item.getQuantity()));
+            managedItem.setTotal_price(lineTotal);
             em.persist(managedItem);
-            total = total.add(managedItem.getTotal_price());
+            total = total.add(lineTotal);
         }
 
-        os.setTotalAmount(total);
+        os.setTotalAmount(MonetaryAmounts.normalize(total));
         return os;
     }
 
@@ -73,19 +78,32 @@ public class ServiceOrderFacade extends AbstractFacade<ServiceOrderEntity> {
         }
     }
 
-    public void startProgress(ServiceOrderEntity os) {
+    public void startProgress(ServiceOrderEntity os, String paymentMethod) {
         ServiceOrderEntity managed = em.find(ServiceOrderEntity.class, os.getId());
         if (managed == null) {
             return;
         }
         if (managed.getStatus() == ServiceOrderStatus.OPEN) {
+            managed.setPaymentMethod(resolvePaymentMethod(paymentMethod, managed.getPaymentMethod()));
             managed.setStatus(ServiceOrderStatus.IN_PROGRESS);
             em.merge(managed);
         }
     }
 
+    public void updatePaymentMethod(ServiceOrderEntity os, String paymentMethod) {
+        ServiceOrderEntity managed = em.find(ServiceOrderEntity.class, os.getId());
+        if (managed == null) {
+            return;
+        }
+        if (managed.getStatus() == ServiceOrderStatus.OPEN
+                || managed.getStatus() == ServiceOrderStatus.IN_PROGRESS) {
+            managed.setPaymentMethod(normalizePaymentMethod(paymentMethod));
+            em.merge(managed);
+        }
+    }
+
     public void complete(ServiceOrderEntity os, String paymentMethod,
-                         CashFlowFacade cashFlowFacade) {
+                         CashFlowFacade cashFlowFacade, UserEntity registeredBy) {
         ServiceOrderEntity managed = em.find(ServiceOrderEntity.class, os.getId());
         if (managed == null) {
             return;
@@ -94,6 +112,8 @@ public class ServiceOrderFacade extends AbstractFacade<ServiceOrderEntity> {
                 && managed.getStatus() != ServiceOrderStatus.IN_PROGRESS) {
             return;
         }
+        String resolvedPaymentMethod = resolvePaymentMethod(paymentMethod, managed.getPaymentMethod());
+        managed.setPaymentMethod(resolvedPaymentMethod);
         managed.setStatus(ServiceOrderStatus.COMPLETED);
         managed.setCompletedAt(LocalDateTime.now());
         em.merge(managed);
@@ -103,8 +123,11 @@ public class ServiceOrderFacade extends AbstractFacade<ServiceOrderEntity> {
         entry.setServiceOrder(managed);
         entry.setAmount(managed.getTotalAmount());
         entry.setDescription("OS Concluida #" + managed.getNumber());
-        entry.setPaymentMethod(paymentMethod);
+        entry.setPaymentMethod(resolvedPaymentMethod);
         entry.setTransactionDate(LocalDateTime.now());
+        if (registeredBy != null && registeredBy.getId() != null) {
+            entry.setCreatedBy(em.getReference(UserEntity.class, registeredBy.getId()));
+        }
         cashFlowFacade.create(entry);
     }
 
@@ -128,6 +151,7 @@ public class ServiceOrderFacade extends AbstractFacade<ServiceOrderEntity> {
         return em.createQuery(
                 "SELECT o FROM ServiceOrderEntity o "
                 + "LEFT JOIN FETCH o.client "
+                + "LEFT JOIN FETCH o.user "
                 + "ORDER BY o.openedAt DESC",
                 ServiceOrderEntity.class)
                 .getResultList();
@@ -165,5 +189,18 @@ public class ServiceOrderFacade extends AbstractFacade<ServiceOrderEntity> {
                 "SELECT COALESCE(MAX(o.id), 0) + 1 FROM ServiceOrderEntity o", Long.class)
                 .getSingleResult();
         return String.format("OS-%04d", seq);
+    }
+
+    private String resolvePaymentMethod(String requested, String current) {
+        String normalized = normalizePaymentMethod(requested);
+        return normalized != null ? normalized : current;
+    }
+
+    private String normalizePaymentMethod(String paymentMethod) {
+        if (paymentMethod == null) {
+            return null;
+        }
+        String trimmed = paymentMethod.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

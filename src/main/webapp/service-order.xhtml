@@ -94,6 +94,10 @@
                                 <h:outputText value="#{item.client.name}"/>
                             </p:column>
 
+                            <p:column headerText="Cadastrado por" sortBy="#{item.user.name}">
+                                <h:outputText value="#{serviceOrderController.formatCreatedBy(item)}"/>
+                            </p:column>
+
                             <p:column headerText="Status" sortBy="#{item.status}" styleClass="text-center">
                                 <p:tag value="#{serviceOrderController.formatStatus(item.status)}"
                                        severity="#{serviceOrderController.getStatusSeverity(item.status)}"/>
@@ -143,8 +147,8 @@
                                     <span class="executa-os-detail-value">#{serviceOrderController.selected.client.name}</span>
                                 </div>
                                 <div class="col-12 md:col-4">
-                                    <span class="executa-os-detail-label">Responsável</span>
-                                    <span class="executa-os-detail-value">#{serviceOrderController.selected.user.name}</span>
+                                    <span class="executa-os-detail-label">Cadastrado por</span>
+                                    <span class="executa-os-detail-value">#{serviceOrderController.formatCreatedBy(serviceOrderController.selected)}</span>
                                 </div>
                                 <div class="col-12 md:col-4">
                                     <span class="executa-os-detail-label">Aberta em</span>
@@ -207,9 +211,9 @@
 
                             <h:panelGroup id="paymentSection" rendered="#{serviceOrderController.canComplete()}">
                                 <div class="field m-0">
-                                    <p:outputLabel for="iptPaymentMethod" value="Forma de pagamento (ao concluir)"/>
+                                    <p:outputLabel for="iptPaymentMethod" value="Forma de pagamento"/>
                                     <p:selectOneMenu id="iptPaymentMethod"
-                                                     value="#{serviceOrderController.paymentMethod}"
+                                                     value="#{serviceOrderController.selected.paymentMethod}"
                                                      styleClass="w-full md:w-20rem">
                                         <f:selectItem itemLabel="Não informado" itemValue="#{null}"/>
                                         <f:selectItem itemLabel="Dinheiro" itemValue="Dinheiro"/>
@@ -217,7 +221,20 @@
                                         <f:selectItem itemLabel="Cartão de crédito" itemValue="Cartão de crédito"/>
                                         <f:selectItem itemLabel="Cartão de débito" itemValue="Cartão de débito"/>
                                         <f:selectItem itemLabel="Transferência" itemValue="Transferência"/>
+                                        <p:ajax event="change"
+                                                listener="#{serviceOrderController.savePaymentMethod()}"
+                                                process="@this"
+                                                update="@none"/>
                                     </p:selectOneMenu>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{not serviceOrderController.canComplete() and not empty serviceOrderController.selected.paymentMethod}">
+                                <div class="executa-os-detail-grid grid mb-3">
+                                    <div class="col-12 md:col-4">
+                                        <span class="executa-os-detail-label">Forma de pagamento</span>
+                                        <span class="executa-os-detail-value">#{serviceOrderController.selected.paymentMethod}</span>
+                                    </div>
                                 </div>
                             </h:panelGroup>
                         </p:panel>
@@ -229,7 +246,7 @@
                                          icon="pi pi-play"
                                          styleClass="ui-button-outlined"
                                          disabled="#{not serviceOrderController.canStartProgress()}"
-                                         process="@this"
+                                         process=":frmList:paymentSection @this"
                                          actionListener="#{serviceOrderController.startProgressSelected()}"
                                          update=":frmList:growl :frmList:datalist :frmList:selectedPanel :frmList:osActions"/>
                         <p:commandButton id="btnComplete"
@@ -349,9 +366,13 @@
                         <p:inputNumber id="iptQuantity"
                                        value="#{serviceOrderController.itemQuantity}"
                                        styleClass="w-full"
+                                       mode="decimal"
+                                       minFractionDigits="2"
+                                       maxFractionDigits="2"
+                                       decimalSeparator=","
+                                       thousandSeparator="."
                                        minValue="0.01"
-                                       decimalPlaces="2"
-                                       minFractionDigits="2"/>
+                                       maxValue="99999999.99"/>
                     </div>
 
                     <div class="field col-12 md:col-2 flex align-items-end">

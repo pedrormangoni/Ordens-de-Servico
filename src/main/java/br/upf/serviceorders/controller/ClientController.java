@@ -1,6 +1,7 @@
 package br.upf.serviceorders.controller;
 
 import br.upf.serviceorders.entity.ClientEntity;
+import br.upf.serviceorders.entity.UserEntity;
 import br.upf.serviceorders.facade.ClientFacade;
 import br.upf.serviceorders.facade.ServiceOrderFacade;
 import jakarta.annotation.PostConstruct;
@@ -8,6 +9,7 @@ import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -32,6 +34,9 @@ public class ClientController implements Serializable {
 
     @EJB
     private ServiceOrderFacade serviceOrderFacade;
+
+    @Inject
+    private UserController userController;
 
     private ClientEntity client;
     private List<ClientEntity> list;
@@ -61,12 +66,26 @@ public class ClientController implements Serializable {
         return formatCpf(cpf);
     }
 
+    public String formatCreatedBy(ClientEntity item) {
+        if (item == null || item.getCreatedBy() == null || item.getCreatedBy().getName() == null) {
+            return "—";
+        }
+        return item.getCreatedBy().getName();
+    }
+
     public void create() {
         if (!validateClient(client)) {
             PrimeFaces.current().ajax().addCallbackParam("saved", false);
             return;
         }
+        UserEntity loggedUser = userController.getLoggedUser();
+        if (loggedUser == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Usuário não autenticado. Faça login novamente.");
+            PrimeFaces.current().ajax().addCallbackParam("saved", false);
+            return;
+        }
         normalizeClient(client);
+        client.setCreatedBy(loggedUser);
         try {
             clientFacade.create(client);
         } catch (EJBException ex) {
@@ -293,7 +312,8 @@ public class ClientController implements Serializable {
         return contains(client.getName(), term)
                 || contains(client.getDocument(), term)
                 || contains(client.getPhone(), term)
-                || contains(client.getEmail(), term);
+                || contains(client.getEmail(), term)
+                || contains(formatCreatedBy(client), term);
     }
 
     private boolean contains(String value, String term) {

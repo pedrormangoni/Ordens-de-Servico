@@ -27,4 +27,14 @@ public class ServiceFacade extends AbstractFacade<ServiceEntity> {
             ServiceEntity.class)
             .getResultList();
     }
+
+    @Override
+    public List<ServiceEntity> findAll() {
+        return em.createQuery(
+                "SELECT s FROM ServiceEntity s "
+                + "LEFT JOIN FETCH s.createdBy "
+                + "ORDER BY s.name",
+                ServiceEntity.class)
+                .getResultList();
+    }
 }

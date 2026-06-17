@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -34,16 +36,22 @@ public class ServiceOrderItemEntity implements Serializable {
     private Long id;
 
     @NotNull
+    @DecimalMin("0.01")
+    @DecimalMax("99999999.99")
     @Basic(optional = false)
     @Column(name = "quantity", precision = 10, scale = 2)
     private BigDecimal quantity;
 
     @NotNull
+    @DecimalMin("0.00")
+    @DecimalMax("99999999.99")
     @Basic(optional = false)
     @Column(name = "unit_price", precision = 10, scale = 2)
     private BigDecimal unit_price;
     
     @NotNull
+    @DecimalMin("0.00")
+    @DecimalMax("99999999.99")
     @Basic(optional = false)
     @Column(name = "total_price", precision = 10, scale = 2)
     private BigDecimal total_price;

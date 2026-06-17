@@ -11,6 +11,7 @@ import br.upf.serviceorders.facade.ClientFacade;
 import br.upf.serviceorders.facade.ServiceFacade;
 import br.upf.serviceorders.facade.ServiceOrderFacade;
 import br.upf.serviceorders.facade.ServiceOrderItemFacade;
+import br.upf.serviceorders.util.MonetaryAmounts;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -63,7 +64,6 @@ public class ServiceOrderController implements Serializable {
     private ServiceEntity selectedService;
     private BigDecimal itemQuantity;
     private List<ServiceOrderItemEntity> items;
-    private String paymentMethod;
     private String searchTerm;
     private ServiceOrderStatus statusFilter;
 
@@ -124,17 +124,47 @@ public class ServiceOrderController implements Serializable {
                     "Selecione um serviço", null));
             return;
         }
-        if (itemQuantity == null || itemQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+        if (itemQuantity == null || !MonetaryAmounts.isPositiveWithinLimit(itemQuantity)) {
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Informe uma quantidade válida", null));
+                    "Informe uma quantidade entre 0,01 e 99.999.999,99", null));
+            return;
+        }
+
+        ServiceEntity service = serviceFacade.find(selectedService.getId());
+        if (service == null) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Serviço não encontrado", null));
+            return;
+        }
+
+        BigDecimal unitPrice = MonetaryAmounts.normalize(service.getPrice());
+        if (!MonetaryAmounts.isWithinLimit(unitPrice)) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "O preço do serviço \"" + service.getName()
+                    + "\" é inválido. Edite o cadastro do serviço.", null));
+            return;
+        }
+
+        BigDecimal quantity = MonetaryAmounts.normalize(itemQuantity);
+        BigDecimal lineTotal = MonetaryAmounts.lineTotal(unitPrice, quantity);
+        if (!MonetaryAmounts.isWithinLimit(lineTotal)) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "O subtotal deste item excede o limite permitido (R$ 99.999.999,99).", null));
+            return;
+        }
+
+        BigDecimal projectedTotal = getItemsTotal().add(lineTotal);
+        if (!MonetaryAmounts.isWithinLimit(projectedTotal)) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "O total da ordem excederia o limite permitido (R$ 99.999.999,99).", null));
             return;
         }
 
         ServiceOrderItemEntity item = new ServiceOrderItemEntity();
-        item.setService(selectedService);
-        item.setQuantity(itemQuantity);
-        item.setUnit_price(selectedService.getPrice());
-        item.setTotal_price(selectedService.getPrice().multiply(itemQuantity));
+        item.setService(service);
+        item.setQuantity(quantity);
+        item.setUnit_price(unitPrice);
+        item.setTotal_price(lineTotal);
         items.add(item);
 
         selectedService = null;
@@ -160,6 +190,11 @@ public class ServiceOrderController implements Serializable {
                     "Adicione ao menos um serviço à ordem", null));
             return;
         }
+        if (!MonetaryAmounts.isWithinLimit(getItemsTotal())) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "O total da ordem excede o limite permitido (R$ 99.999.999,99).", null));
+            return;
+        }
 
         UserEntity loggedUser = userController.getLoggedUser();
         if (loggedUser == null) {
@@ -171,8 +206,11 @@ public class ServiceOrderController implements Serializable {
         try {
             serviceOrderFacade.open(client, loggedUser, serviceOrder.getDescription(), items);
         } catch (EJBException ex) {
-            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Erro ao salvar a ordem de serviço.", null));
+            String message = MonetaryAmounts.isNumericOverflow(ex)
+                    ? "O total da ordem excede o limite permitido (R$ 99.999.999,99). "
+                    + "Verifique os preços dos serviços cadastrados."
+                    : "Erro ao salvar a ordem de serviço.";
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, message, null));
             return;
         }
 
@@ -226,17 +264,25 @@ public class ServiceOrderController implements Serializable {
         if (selected == null) {
             return;
         }
-        serviceOrderFacade.startProgress(selected);
+        serviceOrderFacade.startProgress(selected, selected.getPaymentMethod());
         findAll();
         refreshSelected();
         addMessage(FacesMessage.SEVERITY_INFO, "Ordem marcada como em andamento.");
+    }
+
+    public void savePaymentMethod() {
+        if (selected == null || !isActiveStatus()) {
+            return;
+        }
+        serviceOrderFacade.updatePaymentMethod(selected, selected.getPaymentMethod());
+        refreshSelected();
     }
 
     public void completeSelected() {
         if (selected == null) {
             return;
         }
-        serviceOrderFacade.complete(selected, paymentMethod, cashFlowFacade);
+        serviceOrderFacade.complete(selected, selected.getPaymentMethod(), cashFlowFacade, userController.getLoggedUser());
         findAll();
         refreshSelected();
         addMessage(FacesMessage.SEVERITY_INFO, "Ordem concluída e registrada no fluxo de caixa.");
@@ -336,6 +382,7 @@ public class ServiceOrderController implements Serializable {
                 || (item.getClient() != null && contains(item.getClient().getName(), term))
                 || contains(item.getDescription(), term)
                 || contains(formatStatus(item.getStatus()), term)
+                || contains(formatCreatedBy(item), term)
                 || (item.getStatus() != null && contains(item.getStatus().name(), term));
     }
 
@@ -415,6 +462,13 @@ public class ServiceOrderController implements Serializable {
         return item.getNumber();
     }
 
+    public String formatCreatedBy(ServiceOrderEntity item) {
+        if (item == null || item.getUser() == null || item.getUser().getName() == null) {
+            return "—";
+        }
+        return item.getUser().getName();
+    }
+
     public ServiceOrderEntity getServiceOrder() {
         return serviceOrder;
     }
@@ -481,14 +535,6 @@ public class ServiceOrderController implements Serializable {
 
     public void setItems(List<ServiceOrderItemEntity> items) {
         this.items = items;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
     }
 
     public String getSearchTerm() {

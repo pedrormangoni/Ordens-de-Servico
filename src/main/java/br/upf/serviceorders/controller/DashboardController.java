@@ -1,7 +1,9 @@
 package br.upf.serviceorders.controller;
 
 import br.upf.serviceorders.entity.ServiceOrderEntity;
+import br.upf.serviceorders.enums.CashFlowType;
 import br.upf.serviceorders.enums.ServiceOrderStatus;
+import br.upf.serviceorders.facade.CashFlowFacade;
 import br.upf.serviceorders.facade.ClientFacade;
 import br.upf.serviceorders.facade.ServiceOrderFacade;
 import jakarta.annotation.PostConstruct;
@@ -23,6 +25,9 @@ public class DashboardController implements Serializable {
     @EJB
     private ClientFacade clientFacade;
 
+    @EJB
+    private CashFlowFacade cashFlowFacade;
+
     private long openOrdersCount;
     private long activeClientsCount;
     private long statusOpenCount;
@@ -30,6 +35,8 @@ public class DashboardController implements Serializable {
     private long statusCompletedCount;
     private long statusCancelledCount;
     private BigDecimal revenueTotal;
+    private BigDecimal expenseTotal;
+    private BigDecimal netBalance;
     private int completionRate;
     private List<ServiceOrderEntity> recentOrders;
 
@@ -53,10 +60,9 @@ public class DashboardController implements Serializable {
 
         openOrdersCount = statusOpenCount + statusInProgressCount;
 
-        revenueTotal = orders.stream()
-                .filter(o -> o.getStatus() == ServiceOrderStatus.COMPLETED)
-                .map(ServiceOrderEntity::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        revenueTotal = cashFlowFacade.getBalanceByType(CashFlowType.INCOME);
+        expenseTotal = cashFlowFacade.getBalanceByType(CashFlowType.EXPENSE);
+        netBalance = revenueTotal.subtract(expenseTotal);
 
         if (orders.isEmpty()) {
             completionRate = 0;
@@ -96,6 +102,14 @@ public class DashboardController implements Serializable {
 
     public BigDecimal getRevenueTotal() {
         return revenueTotal;
+    }
+
+    public BigDecimal getExpenseTotal() {
+        return expenseTotal;
+    }
+
+    public BigDecimal getNetBalance() {
+        return netBalance;
     }
 
     public int getCompletionRate() {

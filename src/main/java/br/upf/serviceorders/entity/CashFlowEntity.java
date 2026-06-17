@@ -17,6 +17,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
@@ -52,6 +54,8 @@ public class CashFlowEntity implements Serializable {
     private String description;
 
     @NotNull
+    @DecimalMin("0.01")
+    @DecimalMax("99999999.99")
     @Basic(optional = false)
     @Column(name = "amount", precision = 10, scale = 2)
     private BigDecimal amount;
@@ -63,6 +67,10 @@ public class CashFlowEntity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "service_order_id", referencedColumnName = "id")
     private ServiceOrderEntity serviceOrder;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by_id", referencedColumnName = "id")
+    private UserEntity createdBy;
 
     @NotNull
     @Basic(optional = false)
@@ -84,6 +92,14 @@ public class CashFlowEntity implements Serializable {
 
     public void setServiceOrder(ServiceOrderEntity serviceOrder) {
         this.serviceOrder = serviceOrder;
+    }
+
+    public UserEntity getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(UserEntity createdBy) {
+        this.createdBy = createdBy;
     }
 
     public LocalDateTime getTransactionDate() {

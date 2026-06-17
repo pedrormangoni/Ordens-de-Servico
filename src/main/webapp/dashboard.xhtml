@@ -49,7 +49,7 @@
                                 <f:convertNumber pattern="R$ #,##0.00" locale="pt_BR"/>
                             </h:outputText>
                         </h3>
-                        <small class="executa-text-muted">Ordens concluídas</small>
+                        <small class="executa-text-muted">Entradas no fluxo de caixa</small>
                     </div>
                 </div>
 
@@ -95,7 +95,7 @@
                     <div class="card h-full">
                         <h5 class="mt-0 mb-3">Resumo financeiro</h5>
                         <div class="executa-status-item flex justify-content-between align-items-center mb-3">
-                            <span class="executa-page-caption m-0">Receita total</span>
+                            <span class="executa-page-caption m-0">Entradas</span>
                             <span class="executa-stat-value text-xl">
                                 <h:outputText value="#{dashboardController.revenueTotal}">
                                     <f:convertNumber pattern="R$ #,##0.00" locale="pt_BR"/>
@@ -103,12 +103,20 @@
                             </span>
                         </div>
                         <div class="executa-status-item flex justify-content-between align-items-center mb-3">
-                            <span class="executa-page-caption m-0">Ordens concluídas</span>
-                            <p:tag value="#{dashboardController.statusCompletedCount}" severity="success"/>
+                            <span class="executa-page-caption m-0">Saídas</span>
+                            <span class="executa-stat-value text-xl text-red-500">
+                                <h:outputText value="#{dashboardController.expenseTotal}">
+                                    <f:convertNumber pattern="R$ #,##0.00" locale="pt_BR"/>
+                                </h:outputText>
+                            </span>
                         </div>
                         <div class="executa-status-item flex justify-content-between align-items-center">
-                            <span class="executa-page-caption m-0">Taxa de conclusão</span>
-                            <span class="font-semibold">#{dashboardController.completionRate}%</span>
+                            <span class="executa-page-caption m-0">Saldo</span>
+                            <span class="executa-stat-value text-xl">
+                                <h:outputText value="#{dashboardController.netBalance}">
+                                    <f:convertNumber pattern="R$ #,##0.00" locale="pt_BR"/>
+                                </h:outputText>
+                            </span>
                         </div>
                     </div>
                 </div>

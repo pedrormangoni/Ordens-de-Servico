@@ -41,4 +41,14 @@ public class ClientFacade extends AbstractFacade<ClientEntity> {
             .getResultList();
         return results.isEmpty() ? null : results.get(0);
     }
+
+    @Override
+    public List<ClientEntity> findAll() {
+        return em.createQuery(
+                "SELECT c FROM ClientEntity c "
+                + "LEFT JOIN FETCH c.createdBy "
+                + "ORDER BY c.name",
+                ClientEntity.class)
+                .getResultList();
+    }
 }

@@ -1,14 +1,17 @@
 package br.upf.serviceorders.controller;
 
 import br.upf.serviceorders.entity.CashFlowEntity;
+import br.upf.serviceorders.entity.UserEntity;
 import br.upf.serviceorders.enums.CashFlowType;
 import br.upf.serviceorders.facade.CashFlowFacade;
+import br.upf.serviceorders.util.MonetaryAmounts;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -26,6 +29,9 @@ public class CashFlowController implements Serializable {
 
     @EJB
     private CashFlowFacade cashFlowFacade;
+
+    @Inject
+    private UserController userController;
 
     private CashFlowEntity cashFlow;
     private List<CashFlowEntity> list;
@@ -56,11 +62,23 @@ public class CashFlowController implements Serializable {
             PrimeFaces.current().ajax().addCallbackParam("saved", false);
             return;
         }
+        UserEntity loggedUser = userController.getLoggedUser();
+        if (loggedUser == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Usuário não autenticado. Faça login novamente.");
+            PrimeFaces.current().ajax().addCallbackParam("saved", false);
+            return;
+        }
         normalizeCashFlow(cashFlow);
+        cashFlow.setCreatedBy(loggedUser);
         try {
             cashFlowFacade.create(cashFlow);
         } catch (EJBException ex) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao salvar o lançamento.");
+            if (MonetaryAmounts.isNumericOverflow(ex)) {
+                addMessage(FacesMessage.SEVERITY_ERROR,
+                        "O valor informado excede o limite permitido (R$ 99.999.999,99).");
+            } else {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Erro ao salvar o lançamento.");
+            }
             PrimeFaces.current().ajax().addCallbackParam("saved", false);
             return;
         }
@@ -142,11 +160,19 @@ public class CashFlowController implements Serializable {
         return item.getServiceOrder().getNumber();
     }
 
+    public String formatCreatedBy(CashFlowEntity item) {
+        if (item.getCreatedBy() == null || item.getCreatedBy().getName() == null) {
+            return "—";
+        }
+        return item.getCreatedBy().getName();
+    }
+
     private boolean matchesSearch(CashFlowEntity item, String term) {
         return contains(item.getDescription(), term)
                 || contains(item.getPaymentMethod(), term)
                 || contains(formatType(item.getType()), term)
                 || contains(formatServiceOrder(item), term)
+                || contains(formatCreatedBy(item), term)
                 || (item.getAmount() != null && item.getAmount().toPlainString().contains(term));
     }
 
@@ -181,9 +207,9 @@ public class CashFlowController implements Serializable {
             valid = false;
         }
 
-        if (entity.getAmount() == null || entity.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (entity.getAmount() == null || !MonetaryAmounts.isPositiveWithinLimit(entity.getAmount())) {
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Informe um valor maior que zero", null));
+                    "Informe um valor entre R$ 0,01 e R$ 99.999.999,99", null));
             valid = false;
         }
 
@@ -199,6 +225,7 @@ public class CashFlowController implements Serializable {
         if (entity.getTransactionDate() == null) {
             entity.setTransactionDate(LocalDateTime.now());
         }
+        entity.setAmount(MonetaryAmounts.normalize(entity.getAmount()));
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary) {
